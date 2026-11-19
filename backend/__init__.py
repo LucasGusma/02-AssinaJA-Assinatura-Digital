@@ -1,0 +1,1 @@
+"""AssinaJA backend."""

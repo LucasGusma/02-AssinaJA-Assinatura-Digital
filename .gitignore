@@ -1,0 +1,43 @@
+# Dependencias de Ambiente
+node_modules/
+.venv/
+venv/
+venv2/
+meu_venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Segredos e Configuracoes Locais
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Bancos de Dados Locais e Arquivos Temporarios
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+instance/
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.log
+
+# Logs e Builds
+*.log
+logs/
+dist/
+build/
+.DS_Store
+Thumbs.db
+scratch/
+temp/
+*.tmp

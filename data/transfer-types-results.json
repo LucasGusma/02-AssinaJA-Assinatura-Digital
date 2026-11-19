@@ -1,0 +1,102 @@
+[
+  {
+    "case": "ANOENF/outros",
+    "result": "passed"
+  },
+  {
+    "case": "EVOMED/outros",
+    "result": "passed"
+  },
+  {
+    "case": "PRESCR/outros",
+    "result": "passed"
+  },
+  {
+    "case": "PRESCR/urgencia",
+    "result": "passed"
+  },
+  {
+    "case": "ENFERM/outros",
+    "result": "passed"
+  },
+  {
+    "case": "ENFERM/urgencia",
+    "result": "passed"
+  },
+  {
+    "case": "TRATMT/outros",
+    "result": "passed"
+  },
+  {
+    "case": "TRATMT/urgencia",
+    "result": "no_sample"
+  },
+  {
+    "case": "AFERIC/outros",
+    "result": "passed"
+  },
+  {
+    "case": "AFERIC/urgencia",
+    "result": "passed"
+  },
+  {
+    "case": "ALTMED/outros",
+    "result": "passed"
+  },
+  {
+    "case": "ALTMED/urgencia",
+    "result": "no_eligible_sample"
+  },
+  {
+    "case": "AVALIA/outros",
+    "result": "passed"
+  },
+  {
+    "case": "AVALIA/urgencia",
+    "result": "passed"
+  },
+  {
+    "case": "DIAEST/outros",
+    "result": "passed"
+  },
+  {
+    "case": "DIAEST/urgencia",
+    "result": "passed"
+  },
+  {
+    "case": "DIAENF/outros",
+    "result": "passed"
+  },
+  {
+    "case": "DIAENF/urgencia",
+    "result": "no_sample"
+  },
+  {
+    "case": "HISENF/outros",
+    "result": "passed"
+  },
+  {
+    "case": "HISENF/urgencia",
+    "result": "passed"
+  },
+  {
+    "case": "RESENF/outros",
+    "result": "passed"
+  },
+  {
+    "case": "RESENF/urgencia",
+    "result": "no_sample"
+  },
+  {
+    "case": "ANEXO/outros",
+    "result": "passed"
+  },
+  {
+    "case": "MEDICA/outros",
+    "result": "passed"
+  },
+  {
+    "case": "DOCELE/outros",
+    "result": "passed"
+  }
+]

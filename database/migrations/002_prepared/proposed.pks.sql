@@ -1,0 +1,26 @@
+CREATE OR REPLACE PACKAGE SCHEMA_HOSPITAL.PKG_GERENCIADOR_ASSINATURA AS
+
+    PROCEDURE lista_documentos(
+        p_usuario  IN pw_documento_clinico.cd_usuario%TYPE,
+        p_dt_ini   IN pw_documento_clinico.dh_criacao%TYPE,
+        p_dt_fim   IN pw_documento_clinico.dh_criacao%TYPE,
+        documentos OUT SYS_REFCURSOR
+    );
+
+    PROCEDURE atualiza_prestador(
+        p_cd_documento_clinico IN pw_documento_clinico.cd_documento_clinico%TYPE,
+        p_cd_prestador         IN prestador.cd_prestador%TYPE
+    );
+
+    -- AssinaJA: authenticated global and personal pending-document views.
+    PROCEDURE lista_pendencias(
+        p_usuario IN pw_documento_clinico.cd_usuario%TYPE,
+        p_dt_ini IN DATE,
+        p_dt_fim IN DATE,
+        p_escopo IN VARCHAR2,
+        p_antes IN NUMBER,
+        p_limite IN NUMBER,
+        documentos OUT SYS_REFCURSOR
+    );
+
+END PKG_GERENCIADOR_ASSINATURA;

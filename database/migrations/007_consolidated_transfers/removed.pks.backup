@@ -1,0 +1,6 @@
+PACKAGE         PKG_ASSINAJA_TRANSF AUTHID DEFINER AS
+ FUNCTION bloqueio(p_documento NUMBER) RETURN VARCHAR2;
+ PROCEDURE destinatarios(p_autor VARCHAR2,p_documento NUMBER,p_busca VARCHAR2,resultado OUT SYS_REFCURSOR);
+ PROCEDURE transferir(p_autor VARCHAR2,p_documento NUMBER,p_origem VARCHAR2,p_destino VARCHAR2,
+  p_motivo VARCHAR2,p_chave VARCHAR2,p_request VARCHAR2,p_evento OUT NUMBER);
+END;

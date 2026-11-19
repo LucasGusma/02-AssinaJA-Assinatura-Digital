@@ -1,0 +1,22 @@
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, expect, it, vi } from 'vitest';
+import { Documents } from './Documents';
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+it('refreshes after 60 seconds, pauses for details, and displays discharge time', async () => {
+  vi.useFakeTimers();
+  const fetcher = vi.fn(async (url: string) => new Response(JSON.stringify(url.includes('documents?') ? { documents: [{ id: 1, title: 'Documento teste', status: 'FECHADO', can_transfer: false, discharge_at: '20/10/2026 14:35:12' }], next_cursor: null } : url.includes('summary') ? { total: 1 } : { types: [] }), { headers: { 'Content-Type': 'application/json' } }));
+  vi.stubGlobal('fetch', fetcher);
+  const view = render(<Documents canTransfer={false} sectorFilter={false} />);
+  await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+  const count = () => fetcher.mock.calls.filter(([url]) => url.includes('documents?')).length;
+  expect(count()).toBe(1);
+  await act(async () => { await vi.advanceTimersByTimeAsync(60000); });
+  expect(count()).toBe(2);
+  fireEvent.click(screen.getByRole('button', { name: /Ver detalhes/ }));
+  expect(screen.getByText('20/10/2026 14:35:12')).toBeInTheDocument();
+  await act(async () => { await vi.advanceTimersByTimeAsync(60000); });
+  expect(count()).toBe(2);
+  view.unmount();
+  await act(async () => { await vi.advanceTimersByTimeAsync(60000); });
+  expect(count()).toBe(2);
+});

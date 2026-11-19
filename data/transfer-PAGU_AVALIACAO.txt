@@ -1,0 +1,254 @@
+TRG_A_PAGU_AVALIACAO
+Declare  /* Criada por Edson(MV Informática) 03/06/2026 09:05 */
+      vcd_audit_tabela  number(10) := 0; 
+ Begin  
+    /* Auditoria das Tabelas */
+    If    Inserting Then 
+          usuario_banco.pk_sgu.audita_tabela('PAGU_AVALIACAO','I',vcd_audit_tabela); 
+    End If; 
+    If Updating then 
+          usuario_banco.pk_sgu.audita_tabela('PAGU_AVALIACAO','U',vcd_audit_tabela); 
+    End If; 
+    If Deleting then 
+          usuario_banco.pk_sgu.audita_tabela('PAGU_AVALIACAO','D',vcd_audit_tabela); 
+    End If; 
+    /* Auditoria das Colunas */
+    If    Inserting Then 
+          null; 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_AVALIACAO',vcd_audit_tabela,null,to_char(:new.CD_AVALIACAO),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_FORMULA',vcd_audit_tabela,null,to_char(:new.CD_FORMULA),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','DH_AVALIACAO',vcd_audit_tabela,null,to_char(:new.DH_AVALIACAO,'DD/MM/YYYY'),to_char(:new.CD_AVALIACAO)); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','NM_USUARIO',vcd_audit_tabela,null,:new.NM_USUARIO,to_char(:new.CD_AVALIACAO)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','VL_RESULTADO',vcd_audit_tabela,null,to_char(:new.VL_RESULTADO),to_char(:new.CD_AVALIACAO) ); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_ATENDIMENTO',vcd_audit_tabela,null,to_char(:new.CD_ATENDIMENTO),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_COLETA_SINAL_VITAL',vcd_audit_tabela,null,to_char(:new.CD_COLETA_SINAL_VITAL),to_char(:new.CD_AVALIACAO) ); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_MULTI_EMPRESA',vcd_audit_tabela,null,to_char(:new.CD_MULTI_EMPRESA),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_REGISTRO_CLINICO',vcd_audit_tabela,null,to_char(:new.CD_REGISTRO_CLINICO),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_DOCUMENTO_CLINICO',vcd_audit_tabela,null,to_char(:new.CD_DOCUMENTO_CLINICO),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','DS_INTERPRETACAO_RESULTADO',vcd_audit_tabela,null,:new.DS_INTERPRETACAO_RESULTADO,to_char(:new.CD_AVALIACAO)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_TRIAGEM_ATENDIMENTO',vcd_audit_tabela,null,to_char(:new.CD_TRIAGEM_ATENDIMENTO),to_char(:new.CD_AVALIACAO),'S'); 
+    end if; 
+    If    Deleting  Then 
+          null; 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_AVALIACAO',vcd_audit_tabela,to_char(:old.CD_AVALIACAO),null,to_char(:old.CD_AVALIACAO),'S');
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_FORMULA',vcd_audit_tabela,to_char(:old.CD_FORMULA),null,to_char(:old.CD_AVALIACAO),'S');
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','DH_AVALIACAO',vcd_audit_tabela,to_char(:old.DH_AVALIACAO,'DD/MM/YYYY'),null,to_char(:old.CD_AVALIACAO));
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','NM_USUARIO',vcd_audit_tabela,:old.NM_USUARIO,null,to_char(:old.CD_AVALIACAO));
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','VL_RESULTADO',vcd_audit_tabela,to_char(:old.VL_RESULTADO),null,to_char(:old.CD_AVALIACAO));
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_ATENDIMENTO),null,to_char(:old.CD_AVALIACAO),'S');
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_COLETA_SINAL_VITAL',vcd_audit_tabela,to_char(:old.CD_COLETA_SINAL_VITAL),null,to_char(:old.CD_AVALIACAO));
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_MULTI_EMPRESA',vcd_audit_tabela,to_char(:old.CD_MULTI_EMPRESA),null,to_char(:old.CD_AVALIACAO),'S');
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_REGISTRO_CLINICO',vcd_audit_tabela,to_char(:old.CD_REGISTRO_CLINICO),null,to_char(:old.CD_AVALIACAO),'S');
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_DOCUMENTO_CLINICO',vcd_audit_tabela,to_char(:old.CD_DOCUMENTO_CLINICO),null,to_char(:old.CD_AVALIACAO),'S');
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','DS_INTERPRETACAO_RESULTADO',vcd_audit_tabela,:old.DS_INTERPRETACAO_RESULTADO,null,to_char(:old.CD_AVALIACAO));
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_TRIAGEM_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_TRIAGEM_ATENDIMENTO),null,to_char(:old.CD_AVALIACAO),'S');
+    end if; 
+    If    Updating  Then 
+          null; 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_AVALIACAO',vcd_audit_tabela,to_char(:old.CD_AVALIACAO),to_char(:new.CD_AVALIACAO),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_FORMULA',vcd_audit_tabela,to_char(:old.CD_FORMULA),to_char(:new.CD_FORMULA),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','DH_AVALIACAO',vcd_audit_tabela,to_char(:old.DH_AVALIACAO,'DD/MM/YYYY'),to_char(:new.DH_AVALIACAO,'DD/MM/YYYY'),to_char(:new.CD_AVALIACAO));
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','NM_USUARIO',vcd_audit_tabela,:old.NM_USUARIO,:new.NM_USUARIO,to_char(:new.CD_AVALIACAO)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','VL_RESULTADO',vcd_audit_tabela,to_char(:old.VL_RESULTADO),to_char(:new.VL_RESULTADO),to_char(:new.CD_AVALIACAO)); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_ATENDIMENTO),to_char(:new.CD_ATENDIMENTO),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_COLETA_SINAL_VITAL',vcd_audit_tabela,to_char(:old.CD_COLETA_SINAL_VITAL),to_char(:new.CD_COLETA_SINAL_VITAL),to_char(:new.CD_AVALIACAO)); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_MULTI_EMPRESA',vcd_audit_tabela,to_char(:old.CD_MULTI_EMPRESA),to_char(:new.CD_MULTI_EMPRESA),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_REGISTRO_CLINICO',vcd_audit_tabela,to_char(:old.CD_REGISTRO_CLINICO),to_char(:new.CD_REGISTRO_CLINICO),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_DOCUMENTO_CLINICO',vcd_audit_tabela,to_char(:old.CD_DOCUMENTO_CLINICO),to_char(:new.CD_DOCUMENTO_CLINICO),to_char(:new.CD_AVALIACAO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','DS_INTERPRETACAO_RESULTADO',vcd_audit_tabela,:old.DS_INTERPRETACAO_RESULTADO,:new.DS_INTERPRETACAO_RESULTADO,to_char(:new.CD_AVALIACAO)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PAGU_AVALIACAO','CD_TRIAGEM_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_TRIAGEM_ATENDIMENTO),to_char(:new.CD_TRIAGEM_ATENDIMENTO),to_char(:new.CD_AVALIACAO),'S'); 
+    end if; 
+ END TRG_A_PAGU_AVALIACAO;
+
+TRG_PAGU_AVALIA_REG_DOC_CLIN
+DECLARE
+	-- Esta trigger mantém a tabela pw_documento_clinico atualizada quanto a avaliações do paciente (PAGU_AVALIACAO).
+	-- autor: fabio.magagnin@mv.com.br
+	-- A pk para pw_documento_clincio
+	v_cd_documento_clinico usuario_banco.pw_documento_clinico.cd_documento_clinico%type;
+	-- O status a ser gravado na pw_documento_clinico
+	v_tp_status usuario_banco.pw_documento_clinico.tp_status%type := 'ABERTO';
+  -- Cursor utilizado para saber de o documento clínico já está assinado
+	Cursor c_sn_doc_clinico_assinado(p_cd_documento_clinico usuario_banco.pw_documento_clinico.cd_documento_clinico%type) is
+	select 'S'
+	  from usuario_banco.pw_documento_clinico
+	 where cd_documento_clinico = p_cd_documento_clinico
+	   and cd_documento_digital is not null
+	   and tp_status = 'ASSINADO';
+	-- Variável utilizada para guardar o resultado do cursor c_sn_documento_clinico_fechado.
+	v_sn_doc_clinico_assinado varchar2(1);
+    --
+    v_cd_Prestador NUMBER;
+    --
+BEGIN
+	-- Definimos o novo status, tanto para inserção quanto atualização:
+	if :new.vl_resultado is not NULL AND :new.cd_coleta_sinal_vital IS NULL  THEN  --:new.cd_documento_clinico
+    -- Finalizado
+    v_tp_status := 'FECHADO';
+	end if;
+
+   -- Se está inserindo, cria o registro na pw_documento_clinico
+	if inserting THEN
+
+      if :new.cd_documento_clinico IS NULL THEN
+
+        -- Obtem a pk para pw_documento_clinico
+        select usuario_banco.seq_pw_documento_clinico.nextval
+          into v_cd_documento_clinico
+          from dual;
+	   -- Insere na pw_documento_clinco
+        FOR r IN (select cd_prestador
+              	    from dbasgu.usuarios
+	               where ( nm_usuario = :new.nm_usuario OR cd_usuario = :new.nm_usuario  ))
+
+        LOOP
+           v_cd_Prestador := r.cd_prestador;
+        END LOOP;
+        insert into usuario_banco.pw_documento_clinico ( cd_documento_clinico
+                                               , cd_tipo_documento
+                                               , tp_status
+                                               , dh_referencia
+                                               , dh_criacao
+                                               , dh_fechamento
+                                               , dh_impresso
+											   , dh_documento
+                                               , cd_paciente
+                                               , cd_prestador
+                                               , cd_atendimento
+                                               , cd_usuario
+                                               , nm_documento)
+                                       values ( v_cd_documento_clinico
+                                              , usuario_banco.FNC_PEP_BUSCA_CODIGO_TIP_DOCUM('AVALIA')
+                                              , v_tp_status
+                                              , TRUNC(:new.dh_avaliacao)
+                                              , :new.dh_avaliacao
+                                              , NULL
+                                              , NULL
+											  , :new.dh_avaliacao
+                                              , usuario_banco.FNC_PEP_BUSCA_CODIGO_PACIENTE(:new.cd_atendimento)
+                                              , v_cd_Prestador
+                                              , :new.cd_atendimento
+                                              , usuario_banco.FNC_PEP_CONFIRMA_CODIGO_USU(:new.nm_usuario)
+                                              ,'MV2000 Avaliacao');
+    	-- Seta o código do documento clínico na PAGU_AVALIACAO
+        :new.cd_documento_clinico := v_cd_documento_clinico;
+
+        END IF;
+	-- Se está atualizando
+	elsif updating THEN
+      if :new.cd_coleta_sinal_vital IS NULL THEN
+   	update usuario_banco.pw_documento_clinico
+		   set tp_status = v_tp_status
+      where cd_documento_clinico = :new.cd_documento_clinico;
+     END IF;
+	-- Se está deletando
+
+  elsif deleting THEN
+
+    if :old.cd_coleta_sinal_vital IS NULL THEN
+    -- Obs.: Não é possível deletar avaliações que estejam finalizadas ou assinadas, mas incluímos
+    -- no sql de deleção para evitar que um documento já assinado seja excluído.
+		-- O cursor retorna S se o ducumento já está assinado
+		open c_sn_doc_clinico_assinado(:old.cd_documento_clinico);
+		fetch c_sn_doc_clinico_assinado into v_sn_doc_clinico_assinado;
+		close c_sn_doc_clinico_assinado;
+		-- Se o documento já está assinado não deve ser deletado, somente cancelado.
+	 if v_sn_doc_clinico_assinado = 'S' then
+  		update usuario_banco.pw_documento_clinico
+		     set tp_status = 'CANCELADO'
+       where cd_documento_clinico = :old.cd_documento_clinico;
+     else
+      delete from usuario_banco.pw_documento_clinico
+       where cd_documento_clinico = :old.cd_documento_clinico;
+     end if;
+    END IF;
+  end if;
+END;
+
+TRG_I_PAGU_GRAU_DEPENDENCIA
+Declare
+   Cursor c_unid_int( pCdUnidade Number ) is
+      select leito.cd_unid_int
+         from usuario_banco.atendime
+             ,usuario_banco.leito
+        where leito.cd_leito          = atendime.cd_leito
+          and atendime.cd_atendimento = pCdUnidade;
+   Cursor c_unid_int_controle_kanban( pCdUnidade Number ) is
+      select unid_int_controle_kanban.*
+        from usuario_banco.unid_int_controle_kanban
+       where unid_int_controle_kanban.cd_unid_int = pCdUnidade;
+   Cursor c_pagu_formula_interpretacao( pCdFormula number, pVlAvaliacao number ) is
+      select pagu_formula_interpretacao.*
+        from usuario_banco.pagu_formula_interpretacao
+       where pagu_formula_interpretacao.cd_formula = pCdFormula
+         and pVlAvaliacao between pagu_formula_interpretacao.vl_inicial and pagu_formula_interpretacao.vl_final;
+   Cursor c_atendime_programa( pAtendimento Number ) is
+      select atendime_programa.*
+        from usuario_banco.atendime_programa
+       where atendime_programa.cd_atendimento = pAtendimento
+         and atendime_programa.dt_saida is null; -- OP 3416 - AGG
+   v_cd_unid_int                number;
+   v_cor_kanban_atual           Varchar2(10);
+   v_unid_int_controle_kanban   c_unid_int_controle_kanban%rowtype;
+   v_pagu_formula_interpretacao usuario_banco.pagu_formula_interpretacao%rowtype;
+   v_atendime_programa          c_atendime_programa%rowtype;
+begin
+   If Nvl( usuario_banco.pkg_mv2000.le_configuracao('PARI','SN_SOS_EMERGENCIA'),'N') = 'S' then
+      --> Procura pela unidade de atendimento do paciente
+      Open c_unid_int( :new.cd_atendimento );
+      Fetch c_unid_int into v_cd_unid_int;
+      If c_unid_int%found then
+         --> Procura pelas configuraoes de controle SOS da unidade
+         Open c_unid_int_controle_kanban( v_cd_unid_int );
+         Fetch c_unid_int_controle_kanban into v_unid_int_controle_kanban;
+         If c_unid_int_controle_kanban%found then
+            --> Se existe uma formula padro cadastrada
+            If v_unid_int_controle_kanban.cd_avaliacao_padrao is not null then
+               --> Se a formula atual for igual a mesma que esta configurada atualiza informas do atendimento
+               If v_unid_int_controle_kanban.cd_avaliacao_padrao = :new.cd_formula then
+                  --> recupera a sigla da avaliao para ser usada no grau de dependencia.
+                  Open c_pagu_formula_interpretacao(  :new.cd_formula, :new.vl_resultado );
+                  Fetch c_pagu_formula_interpretacao into v_pagu_formula_interpretacao;
+                  Close c_pagu_formula_interpretacao;
+                  If v_pagu_formula_interpretacao.ds_sigla_interpretacao is not null then
+                     --> Verifica se ja existe movimento no programa
+                     Open c_atendime_programa( :new.cd_atendimento );
+                     Fetch c_atendime_programa into v_atendime_programa;
+                     v_cor_kanban_atual  := usuario_banco.fnc_paeu_retorna_kanban( :new.cd_atendimento );
+                     If c_atendime_programa%notfound then
+                        insert into usuario_banco.atendime_programa( cd_atendimento
+                                                            ,dt_atendime_programa
+                                                            ,sn_internado_ultimos_dias
+                                                            ,ds_usuario
+                                                            ,ds_grau_dependencia
+                                                            ,ds_cor_kanban )
+                                                    Values ( :new.cd_atendimento
+                                                            ,sysdate
+                                                            ,'N'
+                                                            ,USER
+                                                            ,v_pagu_formula_interpretacao.ds_sigla_interpretacao
+                                                            ,v_cor_kanban_atual );
+                     Else
+                        update usuario_banco.atendime_programa
+                           set ds_grau_dependencia     = v_pagu_formula_interpretacao.ds_sigla_interpretacao
+                              ,ds_cor_kanban           = usuario_banco.pkg_paeu_sos_emergencia.fnc_retorna_cor_kanban(v_cd_unid_int, dt_atendime_programa, null) --v_cor_kanban_atual
+                         where atendime_programa.cd_atendimento = :new.cd_atendimento
+                           and atendime_programa.dt_saida is null; -- AGG
+                     End If;
+                     Close c_atendime_programa;
+                  End If;
+               End If;
+            End If;
+         End If;
+         Close c_unid_int_controle_kanban;
+      End if;
+      Close c_unid_int;
+   End If;
+exception when others then
+  usuario_banco.prc_grava_log_erro('TRG_I_PAGU_GRAU_DEPENDENCIA',
+                        'SOS EMERGENCIA',
+                        'TRG_I_PAGU_GRAU_DEPENDENCIA',
+                        SubStr('Atendime: '||:new.cd_atendimento ||'; '||sqlerrm,1,2000),
+                        NULL);
+  raise_application_error (-20100, 'Erro ao incluir o AvaliaÃ§Ã£o no programa SOS Emergencia! '||chr(10)|| sqlerrm);
+end;

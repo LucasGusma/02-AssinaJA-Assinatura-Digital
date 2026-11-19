@@ -1,0 +1,7 @@
+PACKAGE         PKG_ASSINAJA_ACESSO AUTHID DEFINER AS
+ PROCEDURE perfil(p_autor VARCHAR2, resultado OUT SYS_REFCURSOR);
+ PROCEDURE setores(p_autor VARCHAR2, resultado OUT SYS_REFCURSOR);
+ PROCEDURE usuarios(p_autor VARCHAR2, p_setor NUMBER, resultado OUT SYS_REFCURSOR);
+ PROCEDURE permissao(p_autor VARCHAR2,p_usuario VARCHAR2,p_habilitar VARCHAR2,p_request VARCHAR2);
+ PROCEDURE auditoria(p_autor VARCHAR2,p_antes NUMBER,resultado OUT SYS_REFCURSOR);
+END;

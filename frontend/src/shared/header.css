@@ -1,0 +1,62 @@
+/* Original supplied logos are framed in CSS; source images remain unchanged. */
+.login-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 24px;
+  min-height: 110px;
+  height: auto;
+  padding: 12px 5%;
+}
+.header-app-brand { display:flex; align-items:center; justify-content:center; gap:1px; }
+.header-app-mark { position:relative; display:block; width:64px; height:60px; overflow:hidden; mix-blend-mode:screen; flex-shrink:0; }
+.header-app-mark img { position:absolute; width:140px; max-width:none; height:auto; left:-40px; top:-16px; }
+.header-app-name { color:var(--navy); font-size:40px; font-weight:800; letter-spacing:-2px; line-height:1; }
+.header-app-name>span { color:#075d58; }
+.technology-brand { display:flex; justify-content:flex-end; align-items:center; gap:14px; min-width:0; }
+.technology-brand .eyebrow { max-width:235px; text-align:right; line-height:1.8; font-size:9px; letter-spacing:1.3px; }
+.technology-brand>img { width:112px; height:auto; flex-shrink:0; border-radius:6px; }
+.login-card { background:rgba(64, 186, 171, .12); border-color:rgba(64, 186, 171, .22); }
+.filters-without-sector { grid-template-columns:1fr 1fr auto; }
+@media(max-width:1000px) {
+  .login-header { gap:12px; padding-inline:24px; }
+  .technology-brand { gap:6px; flex-direction:column-reverse; align-items:flex-end; }
+  .technology-brand .eyebrow { font-size:8px; max-width:180px; }
+  .technology-brand>img { width:92px; }
+}
+@media(max-width:600px) {
+  .login-header { grid-template-columns:1fr 1fr; gap:6px 16px; padding:12px 20px 16px; }
+  .login-header>.hospital-logo { grid-column:1; grid-row:1; }
+  .header-app-brand { grid-column:1 / -1; grid-row:2; }
+  .technology-brand { grid-column:2; grid-row:1; }
+  .technology-brand .eyebrow { max-width:170px; font-size:7px; letter-spacing:.9px; }
+  .header-app-name { font-size:34px; }
+  .filters-without-sector { grid-template-columns:1fr; }
+}
+
+.provider-filters { grid-template-columns: 1fr 1fr 1.4fr 1fr auto; }
+.provider-filters.filters-without-sector { grid-template-columns: 1fr 1fr 1.4fr auto; }
+@media (max-width: 1100px) { .provider-filters, .provider-filters.filters-without-sector { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .provider-filters, .provider-filters.filters-without-sector { grid-template-columns: 1fr; } }
+
+/* Alternating document rows for easier scanning. */
+.document-table tbody tr:nth-child(odd) { background:#fff; }
+.document-table tbody tr:nth-child(even) { background:#edf2f5; }
+
+/* Stronger outlines distinguish surfaces without changing their layout. */
+:root { --line:#b5c9cc; }
+.panel, .stats article, dialog { border-color:#9fbabc; box-shadow:0 2px 8px #24334508; }
+.sidebar, .topbar { border-color:#adc3c7; }
+input:not([type=checkbox]), select, textarea, .secondary { border-color:#9fb5be; }
+.notice { border-color:#a7d0ca; }
+.login-card { border-color:rgba(8, 124, 117, .35); }
+td, .table-footer, .audit-event, .document-fields article { border-color:#c4d3d9; }
+.document-table thead th { border-bottom:1px solid #b1c5cc; }
+
+.provider-filters, .provider-filters.filters-without-sector { grid-template-columns:repeat(2,minmax(0,1fr)) minmax(180px,1.4fr) minmax(180px,1.4fr) auto; }
+@media(max-width:1200px){.provider-filters,.provider-filters.filters-without-sector{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:600px){.provider-filters,.provider-filters.filters-without-sector{grid-template-columns:1fr;}}
+
+.audit-filters { display:grid; grid-template-columns:minmax(200px,2fr) 1fr 1fr auto auto; gap:14px; align-items:end; padding:0 24px 16px; }
+.audit-detail { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.7; }
+@media(max-width:1200px){.audit-filters{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.audit-filters{grid-template-columns:1fr;}}

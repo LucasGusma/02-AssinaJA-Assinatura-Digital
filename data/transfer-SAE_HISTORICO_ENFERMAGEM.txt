@@ -1,0 +1,101 @@
+TRG_SAE_HIST_ENFE_REG_DOC_CLIN
+DECLARE
+    -- Esta trigger mantém a tabela pw_documento_clinico atualizada quanto a históricos de enfermagem (SAE_HISTORICO_ENFERMAGEM).
+    -- autor: fabio.magagnin@mv.com.br
+    -- data: 30/06/2011
+    CURSOR cUsuario IS
+  SELECT cd_usuario
+  FROM Dbasgu.Usuarios
+  WHERE Usuarios.cd_prestador = :new.Cd_Prestador;
+  -- A pk para pw_documento_clincio
+  v_cd_documento_clinico usuario_banco.pw_documento_clinico.cd_documento_clinico%type;
+  -- O status a ser gravado na pw_documento_clinico
+  v_tp_status usuario_banco.pw_documento_clinico.tp_status%type := 'ABERTO';
+  -- Setor do atedimento
+  v_cd_setor usuario_banco.setor.cd_setor%type;
+  -- Empresa
+  v_cd_multi_empresa usuario_banco.multi_empresas.cd_multi_empresa%type;
+  nCdUsuario Dbasgu.Usuarios.Cd_Usuario%TYPE;
+  BEGIN
+    -- Definimos o novo status, tanto para inserção quanto atualização:
+    IF :new.sn_ativo = 'N' THEN
+      -- Cancelado
+      v_tp_status     := 'CANCELADO';
+    elsif :new.dt_fim IS NOT NULL THEN
+      -- Finalizado
+      v_tp_status := 'FECHADO';
+    END IF;
+    -- Se está inserindo, cria o registro na pw_documento_clinico
+    IF inserting THEN
+	    IF :new.cd_documento_clinico IS NULL THEN
+		    -- Obtem a pk para pw_documento_clinico
+		    SELECT usuario_banco.seq_pw_documento_clinico.nextval
+		    INTO v_cd_documento_clinico
+		    FROM dual;
+		    OPEN cUsuario;
+		    FETCH cUsuario INTO nCdUsuario;
+		    CLOSE cUsuario;
+		    -- Insere na pw_documento_clinco
+		    SELECT fnc_pagu_setor_atendimento(cd_atendimento, tp_atendimento),
+			  usuario_banco.fnc_pagu_multi_empres_atendime(cd_atendimento)
+		    INTO v_cd_setor,
+			  v_cd_multi_empresa
+		    FROM usuario_banco.atendime
+		    WHERE cd_atendimento = :new.cd_atendimento;
+		    INSERT
+		    INTO usuario_banco.pw_documento_clinico
+			  (
+			    cd_documento_clinico ,
+			    cd_tipo_documento ,
+			    tp_status ,
+			    dh_referencia ,
+			    dh_criacao ,
+			    dh_fechamento ,
+			    dh_impresso ,
+			    dh_documento ,
+			    cd_paciente ,
+			    cd_prestador ,
+			    cd_atendimento ,
+			    cd_usuario ,
+			    cd_setor ,
+			    cd_multi_empresa
+			  )
+			  VALUES
+			  (
+			    v_cd_documento_clinico ,
+			    usuario_banco.FNC_PEP_BUSCA_CODIGO_TIP_DOCUM('HISENF') ,
+			    v_tp_status ,
+			    TRUNC(:new.dt_INICIO) ,
+			    :new.dt_INICIO ,
+			    :new.dt_fim ,
+			    NULL ,
+			    :new.dt_INICIO ,
+			    usuario_banco.FNC_PEP_BUSCA_CODIGO_PACIENTE(:new.cd_atendimento) ,
+			    :new.cd_prestador ,
+			    :new.cd_atendimento ,
+			    nCdUsuario ,
+			    v_cd_setor ,
+			    v_cd_multi_empresa
+			  );
+		    -- Seta o código do documento clínico na SAE_HISTORICO_ENFERMAGEM
+		    :new.cd_documento_clinico := v_cd_documento_clinico;
+		END IF;
+		  -- Se está atualizando
+    elsif updating THEN
+      UPDATE usuario_banco.pw_documento_clinico
+      SET tp_status              = v_tp_status,
+        cd_prestador             = :new.cd_prestador,
+        dh_fechamento            = :new.dt_fim
+      WHERE cd_documento_clinico = :new.cd_documento_clinico;
+      -- Se está deletando
+    elsif deleting THEN
+      IF v_tp_status = 'ABERTO' THEN
+        DELETE usuario_banco.pw_documento_clinico
+        WHERE cd_documento_clinico = :old.cd_documento_clinico;
+      ELSE
+        UPDATE usuario_banco.pw_documento_clinico
+        SET tp_status              = 'CANCELADO'
+        WHERE cd_documento_clinico = :old.cd_documento_clinico;
+      END IF;
+    END IF;
+  END;

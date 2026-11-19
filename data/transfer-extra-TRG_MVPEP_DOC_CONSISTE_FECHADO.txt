@@ -1,0 +1,40 @@
+DECLARE
+
+BEGIN
+  --
+  --1 Verificando se o status do Documento está sendo FECHADO ou ASSINADO
+  IF (:OLD.TP_STATUS = 'ABERTO' AND
+      :NEW.TP_STATUS IN ('FECHADO','ASSINADO')) THEN
+    --
+    --2 Verificando se o Objeto é Documento Eletrônico
+    FOR x IN (SELECT 1
+                FROM USUARIO_BANCO.PAGU_OBJETO PO
+               WHERE PO.TP_OBJETO IN ('GRUDOC','DOCELE')
+                 AND PO.CD_OBJETO = :OLD.CD_OBJETO )
+    LOOP
+      --
+      --3 Obtendo os Documentos do Editor para verificar se o mesmo foi fechado no Editor
+      FOR rEditor IN (SELECT PEC.CD_EDITOR_REGISTRO
+                        FROM USUARIO_BANCO.PW_EDITOR_CLINICO PEC
+                       WHERE PEC.CD_DOCUMENTO_CLINICO = :OLD.CD_DOCUMENTO_CLINICO)
+      LOOP
+        --4
+        FOR y IN (SELECT COUNT(1) VAL
+                      FROM USUARIO_BANCO.EDITOR_REGISTRO
+                     WHERE CD_REGISTRO = rEditor.CD_EDITOR_REGISTRO
+                       AND NVL(SN_FECHADO,'N') = 'N')
+        LOOP
+          --
+          IF (y.VAL > 0) THEN
+             Raise_Application_Error(-20998,'Ocorreu um erro no Editor.  Alguns registros não foram fechados devidamente!');
+          END IF;
+          --
+        END LOOP;
+        --4
+      END LOOP;
+      --3
+    END LOOP;
+    --2
+  END IF;
+  --1
+END;

@@ -1,0 +1,45 @@
+TRG_DIAG_ATENDIME_GRAVA_CID
+Begin
+  --
+  -- *** Diagnóstico Principal ***
+  -- *** Diagnóstico principal só terá direito de inserção, alteração e exclusão são processos não será aceitos ***
+  If Inserting and :New.Cd_Diagnostico_Atendime_Pai Is Null and :New.Cd_Cid Is Not Null Then
+    
+	-- Begin alteração feita por André 30/01/2012, mais informações anexas no wi 
+    Pkg_Pagu.Pr_Atendimento( :New.Cd_Atendimento );  -->> Atualiza os dados da variável de atendimento para o atendimento em questão
+	-- End alteração feita por André.
+  End If;
+  --
+  -- *** Só será permitido manipular um diagnóstico já informado quando feito pela prescrição ***
+/* --Alterado por Cicero Lisboa em 23/07/2008
+   --Motivo: Os diagnosticos de oncologia podem ser alterados por causa dos protocolos que são utilizados
+   --        em prescricoes com definem o tratamento
+  If ( Updating or Deleting )
+    and Nvl( :Old.Cd_Pre_Med, 0 ) <> Nvl(Pkg_Pagu_ItPreMed.Fn_PreMed().Cd_Pre_Med,-1)  -->> Só permite excluir o diagnóstico informado pela prescrição que estiver aberta nesta sessão
+    and :New.Cd_Diagnostico_Atendime_Pai Is Null
+    And (:Old.Cd_Pre_Med Is Null And (:New.Cd_Pre_Med <> Nvl(Pkg_Pagu_ItPreMed.Fn_PreMed().Cd_Pre_Med,-1))) Then
+    --
+    Pkg_Pagu.Pr_Erro( 'PAGU', Pkg_Pagu.cErrAlteracaoDiagnostico, 'Atenção: Não é permitido modificar um diagnóstico. Será necessário criar um novo registro de diagnóstico' );
+    --
+  End If;
+*/  
+  --
+  -- *** Diagnóstico Associado ***
+  If (Inserting or Updating)
+    and :New.Cd_Diagnostico_Atendime_Pai Is Not Null
+    and :New.Cd_Cid Is Not Null Then
+    --
+    Insert Into Dbamv.Cid_Ate ( Cd_Atendimento, Cd_Cid )
+     Values ( :New.Cd_Atendimento, :New.Cd_Cid );
+    --
+  Elsif Deleting
+    and :Old.Cd_Diagnostico_Atendime_Pai Is Not Null
+    and :Old.Cd_Cid Is Not Null Then
+    --
+    Delete Dbamv.Cid_Ate
+     Where Cd_Atendimento = :Old.Cd_Atendimento
+       and Cd_Cid   = :Old.Cd_Cid;
+    --
+  End If;
+  --
+End;

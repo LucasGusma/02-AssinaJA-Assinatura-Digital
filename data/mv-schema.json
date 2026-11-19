@@ -1,0 +1,385 @@
+{
+  "columns": [
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_DOCUMENTO_CLINICO",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "N",
+      "position": 1
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_TIPO_DOCUMENTO",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "N",
+      "position": 2
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_DOCUMENTO_DIGITAL",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 3
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_PACIENTE",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 4
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_ATENDIMENTO",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 5
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_USUARIO",
+      "type": "VARCHAR2",
+      "length": 30,
+      "nullable": "Y",
+      "position": 6
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_PRESTADOR",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 7
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "TP_STATUS",
+      "type": "VARCHAR2",
+      "length": 9,
+      "nullable": "Y",
+      "position": 8
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "DH_REFERENCIA",
+      "type": "DATE",
+      "length": 7,
+      "nullable": "Y",
+      "position": 9
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "DH_CRIACAO",
+      "type": "DATE",
+      "length": 7,
+      "nullable": "Y",
+      "position": 10
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "DH_FECHAMENTO",
+      "type": "DATE",
+      "length": 7,
+      "nullable": "Y",
+      "position": 11
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "DH_IMPRESSO",
+      "type": "DATE",
+      "length": 7,
+      "nullable": "Y",
+      "position": 12
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "TP_EXTENSAO",
+      "type": "VARCHAR2",
+      "length": 10,
+      "nullable": "Y",
+      "position": 13
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_SETOR",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 14
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_OBJETO",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 15
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_DOCUMENTO_CANCELADO",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 16
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "NM_DOCUMENTO",
+      "type": "VARCHAR2",
+      "length": 100,
+      "nullable": "Y",
+      "position": 17
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "NM_VERSAO_DOCUMENTO",
+      "type": "VARCHAR2",
+      "length": 50,
+      "nullable": "Y",
+      "position": 18
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "DH_DOCUMENTO",
+      "type": "DATE",
+      "length": 7,
+      "nullable": "Y",
+      "position": 19
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_DOCUMENTO_CLINICO_NOVO",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 20
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_DOC_CLINICO_REFERENCIA",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 21
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_USUARIO_AUTORIZADOR",
+      "type": "VARCHAR2",
+      "length": 30,
+      "nullable": "Y",
+      "position": 22
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "SN_INTEGRA_GREEN",
+      "type": "VARCHAR2",
+      "length": 1,
+      "nullable": "Y",
+      "position": 23
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "CD_MULTI_EMPRESA",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 24
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "SN_CONFIDENCIAL",
+      "type": "VARCHAR2",
+      "length": 1,
+      "nullable": "Y",
+      "position": 25
+    },
+    {
+      "owner": "USUARIO_BANCO",
+      "table": "PW_DOCUMENTO_CLINICO",
+      "column": "QT_VIAS_IMPRESSAS",
+      "type": "NUMBER",
+      "length": 22,
+      "nullable": "Y",
+      "position": 26
+    }
+  ],
+  "relationships": [
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_DOCUMENTO_CLIN_US_AUTZD_FK",
+      "kind": "R",
+      "column": "CD_USUARIO_AUTORIZADOR",
+      "position": 1,
+      "target_owner": "DBASGU",
+      "target_table": "USUARIOS",
+      "target_column": "CD_USUARIO"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUMENTO_CLINC_PRES_FK",
+      "kind": "R",
+      "column": "CD_PRESTADOR",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "PRESTADOR",
+      "target_column": "CD_PRESTADOR"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUMENTO_CLINC_SET_FK",
+      "kind": "R",
+      "column": "CD_SETOR",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "SETOR",
+      "target_column": "CD_SETOR"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUMENTO_CLINC_USU_FK",
+      "kind": "R",
+      "column": "CD_USUARIO",
+      "position": 1,
+      "target_owner": "DBASGU",
+      "target_table": "USUARIOS",
+      "target_column": "CD_USUARIO"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUMENTO_CLINICO_1_UK",
+      "kind": "U",
+      "column": "CD_DOCUMENTO_DIGITAL",
+      "position": 1,
+      "target_owner": null,
+      "target_table": null,
+      "target_column": null
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUMENTO_CLINICO_PK",
+      "kind": "P",
+      "column": "CD_DOCUMENTO_CLINICO",
+      "position": 1,
+      "target_owner": null,
+      "target_table": null,
+      "target_column": null
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUM_CLINC_ATENDIME_FK",
+      "kind": "R",
+      "column": "CD_ATENDIMENTO",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "ATENDIME",
+      "target_column": "CD_ATENDIMENTO"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUM_CLINC_DOC_DIGI_FK",
+      "kind": "R",
+      "column": "CD_DOCUMENTO_DIGITAL",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "DOCUMENTO_DIGITAL",
+      "target_column": "CD_DOCUMENTO_DIGITAL"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUM_CLINC_PACIEN_FK",
+      "kind": "R",
+      "column": "CD_PACIENTE",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "PACIENTE",
+      "target_column": "CD_PACIENTE"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUM_CLINI_MUL_EMP_FK",
+      "kind": "R",
+      "column": "CD_MULTI_EMPRESA",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "MULTI_EMPRESAS",
+      "target_column": "CD_MULTI_EMPRESA"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUM_CLIN_CANCEL_FK",
+      "kind": "R",
+      "column": "CD_DOCUMENTO_CANCELADO",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "PW_DOCUMENTO_CLINICO",
+      "target_column": "CD_DOCUMENTO_CLINICO"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUM_CLIN_PW_TP_DOC_FK",
+      "kind": "R",
+      "column": "CD_TIPO_DOCUMENTO",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "PW_TIPO_DOCUMENTO",
+      "target_column": "CD_TIPO_DOCUMENTO"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUM_CLI_PAGU_OBJ_FK",
+      "kind": "R",
+      "column": "CD_OBJETO",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "PAGU_OBJETO",
+      "target_column": "CD_OBJETO"
+    },
+    {
+      "table": "PW_DOCUMENTO_CLINICO",
+      "constraint": "CNT_PW_DOCUM_CLI_PW_DOC_CLI_FK",
+      "kind": "R",
+      "column": "CD_DOCUMENTO_CLINICO_NOVO",
+      "position": 1,
+      "target_owner": "USUARIO_BANCO",
+      "target_table": "PW_DOCUMENTO_CLINICO",
+      "target_column": "CD_DOCUMENTO_CLINICO"
+    }
+  ],
+  "missing_or_inaccessible": [
+    "PW_DOCUMENTO_ASSINADO"
+  ],
+  "checked_at": "2026-10-06T16:42:25.695675+00:00",
+  "environment": "producao"
+}

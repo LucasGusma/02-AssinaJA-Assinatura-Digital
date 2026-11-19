@@ -1,0 +1,91 @@
+TRG_COLET_SIN_VIT_REG_DOC_CLIN
+DECLARE
+	v_cd_documento_clinico usuario_banco.pw_documento_clinico.cd_documento_clinico%type;
+	-- O status a ser gravado na pw_documento_clinico
+	v_tp_status usuario_banco.pw_documento_clinico.tp_status%type := 'ABERTO';
+  CURSOR C_Objeto IS
+    SELECT Cd_Tipo_Documento
+          ,Cd_Objeto
+      FROM Dbamv.Pagu_Objeto
+     WHERE Cd_Tipo_Documento = Dbamv.FNC_PEP_BUSCA_CODIGO_TIP_DOCUM('AFERIC');
+  rObjeto  C_Objeto%ROWTYPE;
+  CURSOR C_Atendime IS
+    SELECT CD_PACIENTE
+          ,TP_ATENDIMENTO
+      FROM Dbamv.ATENDIME
+     WHERE CD_ATENDIMENTO =:new.CD_ATENDIMENTO;
+  rAtendime  C_Atendime%ROWTYPE;
+  BEGIN
+  OPEN  C_Atendime;
+      FETCH C_Atendime INTO rAtendime;
+  CLOSE C_Atendime;
+	if :new.sn_finalizado = 'S' then
+    v_tp_status := 'FECHADO';
+	end if;
+	If inserting then
+      if :new.cd_documento_clinico IS NULL then
+		--
+		IF :new.sn_relevante is null THEN
+		   :new.sn_relevante := 'S';
+		END IF;
+		--
+    	OPEN  C_Objeto;
+        FETCH C_Objeto INTO rObjeto;
+        CLOSE C_Objeto;
+        IF rObjeto.Cd_Objeto IS NOT NULL THEN
+          Select usuario_banco.seq_pw_documento_clinico.nextval
+            into v_cd_documento_clinico
+            from dual;
+			insert into usuario_banco.pw_documento_clinico(cd_documento_clinico
+                                                ,cd_tipo_documento
+                                                ,tp_status
+                                                ,dh_referencia
+                                                ,dh_criacao
+                                                ,dh_fechamento
+                                                ,dh_impresso
+                                                ,cd_paciente
+                                                ,cd_prestador
+                                                ,cd_atendimento
+                                                ,cd_usuario
+                                                ,dh_documento
+                                                ,cd_setor
+                                                ,nm_documento
+                                                ,cd_objeto)
+                                     values (v_cd_documento_clinico
+                                                ,rObjeto.Cd_Tipo_Documento
+                                                ,v_tp_status
+                                                ,Nvl(:new.dt_referencia,Trunc(:new.data_coleta))
+                                                ,:new.data_coleta
+                                                ,NULL
+                                                ,NULL
+                                                ,rAtendime.CD_PACIENTE
+                                                ,:new.cd_prestador
+                                                ,:new.cd_atendimento
+                                                ,usuario_banco.PKG_MV_VARIAVEIS.fnc_get_usuario()
+                                                ,:new.data_coleta
+                                                ,FNC_PAGU_SETOR_ATENDIMENTO(:new.CD_ATENDIMENTO, rAtendime.TP_ATENDIMENTO)
+                                                ,'[MV2000] Afericao'
+                                                ,rObjeto.Cd_Objeto);
+		 :new.cd_documento_clinico := v_cd_documento_clinico;
+        END IF; -->> Cd_Objeto
+      End If; -->> :new.cd_documento_clinico
+	elsif updating then
+	   update usuario_banco.pw_documento_clinico
+       set tp_status = v_tp_status,
+           cd_prestador = :new.cd_prestador,
+           dh_referencia = :new.dt_referencia,
+           dh_criacao = :new.data_coleta,
+           cd_paciente = rAtendime.CD_PACIENTE,
+           cd_atendimento = :new.cd_atendimento
+     where cd_documento_clinico = :new.cd_documento_clinico;
+	elsif deleting then
+    delete from usuario_banco.pw_documento_clinico
+     where cd_documento_clinico = :old.cd_documento_clinico
+       and tp_status != 'ASSINADO'
+       and cd_documento_digital is null
+	   AND nvl(usuario_banco.pkg_mv2000.le_sistema(),'MVPEP') <> 'MVPEP'
+       and cd_tipo_documento NOT IN (SELECT cd_tipo_documento
+                                       FROM usuario_banco.pw_tipo_documento
+                                      WHERE tp_documento IN ('AFEAGR','AFERIC_AGRUP'));
+  end if;
+END;

@@ -1,0 +1,67 @@
+TRG_EVO_ENF_REGIST_DOCUM_CLINC
+DECLARE
+	-- Esta trigger mantém a tabela pw_documento_clinico atualizada quanto a evoluções de enfermagem (EVO_ENF).
+	-- autor: fabio.magagnin@mv.com.br
+	-- data: 30/06/2011
+	-- A pk para pw_documento_clincio
+	v_cd_documento_clinico usuario_banco.pw_documento_clinico.cd_documento_clinico%type;
+    v_cd_objeto NUMBER;
+BEGIN
+	-- Se está inserindo, cria o registro na pw_documento_clinico
+	if inserting then
+		if :new.cd_documento_clinico IS NULL then
+		-- Obtem a pk para pw_documento_clinico
+		select usuario_banco.seq_pw_documento_clinico.nextval
+		  into v_cd_documento_clinico
+		  from dual;
+	    --
+        FOR x IN ( SELECT CD_OBJETO FROM usuario_banco.pagu_objeto WHERE tp_objeto = 'ANOENF' ORDER BY  1 ASC)
+        LOOP
+           v_cd_objeto := x.CD_OBJETO;
+           EXIT;
+        END LOOP;
+    	-- Insere na pw_documento_clinco
+		insert into usuario_banco.pw_documento_clinico ( cd_objeto
+		                                       , cd_documento_clinico
+											   , cd_tipo_documento
+											   , tp_status
+											   , dh_referencia
+											   , dh_criacao
+											   , dh_fechamento
+											   , dh_impresso
+											   , dh_documento
+											   , cd_paciente
+											   , cd_prestador
+											   , cd_atendimento
+											   , cd_usuario)
+										values ( v_cd_objeto
+										       , v_cd_documento_clinico
+											   , usuario_banco.FNC_PEP_BUSCA_CODIGO_TIP_DOCUM('ANOENF')
+											   , 'FECHADO'
+											   , :new.dt_evo_enf
+											   , usuario_banco.fnc_mv_recupera_data_hora(:new.dt_evo_enf, :new.hr_evo_enf)
+											   , null
+											   , :new.dt_impressao
+											   , :new.hr_evo_enf
+											   , usuario_banco.FNC_PEP_BUSCA_CODIGO_PACIENTE(:new.cd_atendimento)
+											   , :new.cd_prestador
+											   , :new.cd_atendimento
+											   , usuario_banco.FNC_PEP_CONFIRMA_CODIGO_USU(:new.nm_usuario));
+		-- Seta o código do documento clínico na EVO_ENF
+		:new.cd_documento_clinico := v_cd_documento_clinico;
+		end if;
+	-- Se está atualizando
+	elsif updating then
+		update usuario_banco.pw_documento_clinico
+       set dh_impresso = usuario_banco.fnc_mv_recupera_data_hora(:new.dt_evo_enf, :new.hr_evo_enf)
+     where cd_documento_clinico = :new.cd_documento_clinico;
+  -- Se está deletando
+	elsif deleting then
+    delete from usuario_banco.pw_documento_clinico
+     where cd_documento_clinico = :old.cd_documento_clinico
+       and tp_status != 'ASSINADO'
+       and cd_documento_digital is NULL;
+    -- Obs.: Não é possível deletar anotações que estejam finalizadas ou assinadas, mas incluímos
+    -- no sql de deleção para evitar que um documento já assinado seja excluído.
+	end if;
+END;

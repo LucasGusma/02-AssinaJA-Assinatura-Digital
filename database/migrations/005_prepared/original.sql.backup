@@ -1,0 +1,106 @@
+CREATE OR REPLACE PACKAGE BODY         PKG_ASSINAJA_TRANSF AS
+ PROCEDURE validar_autor(p_autor VARCHAR2) IS n NUMBER;
+ BEGIN
+  SELECT COUNT(*) INTO n FROM DBASGU.USUARIOS u JOIN BALE_IA.AJA_PERMISSAO a ON a.CD_USUARIO=u.CD_USUARIO
+   WHERE u.CD_USUARIO=p_autor AND u.SN_ATIVO='S' AND a.SN_TRANSFERIR='S';
+  IF n<>1 THEN RAISE_APPLICATION_ERROR(-20010,'Sem permissao de transferencia'); END IF;
+ END;
+ FUNCTION bloqueio(p_documento NUMBER) RETURN VARCHAR2 IS
+  d DBAMV.PW_DOCUMENTO_CLINICO%ROWTYPE;
+  origem DBAMV.PRE_MED%ROWTYPE;
+  assinatura VARCHAR2(1); tipo VARCHAR2(30); atendimento VARCHAR2(1);
+ BEGIN
+  SELECT * INTO d FROM DBAMV.PW_DOCUMENTO_CLINICO WHERE CD_DOCUMENTO_CLINICO=p_documento;
+  IF d.TP_STATUS IS NULL OR d.TP_STATUS<>'FECHADO' OR d.CD_DOCUMENTO_DIGITAL IS NOT NULL THEN
+   RETURN 'Somente documentos fechados e sem assinatura digital podem ser transferidos.';
+  END IF;
+  SELECT SN_ASSINATURA,TP_OBJETO INTO assinatura,tipo FROM DBAMV.PAGU_OBJETO WHERE CD_OBJETO=d.CD_OBJETO;
+  IF assinatura IS NULL OR assinatura<>'S' THEN RETURN 'Documento nao exige assinatura.'; END IF;
+  IF tipo IS NULL OR tipo NOT IN ('PRESCR','ENFERM') THEN RETURN 'Tipo de documento ainda nao homologado para transferencia.'; END IF;
+  SELECT TP_ATENDIMENTO INTO atendimento FROM DBAMV.ATENDIME WHERE CD_ATENDIMENTO=d.CD_ATENDIMENTO;
+  IF atendimento IS NULL OR atendimento='U' THEN RETURN 'Transferencia de urgencia exige validacao das regras de atendimento e faturamento.'; END IF;
+  SELECT * INTO origem FROM DBAMV.PRE_MED WHERE CD_DOCUMENTO_CLINICO=p_documento;
+  IF origem.NM_USUARIO IS NULL OR d.CD_USUARIO IS NULL OR origem.NM_USUARIO<>d.CD_USUARIO
+   OR origem.CD_PRESTADOR IS NULL OR d.CD_PRESTADOR IS NULL OR origem.CD_PRESTADOR<>d.CD_PRESTADOR
+   OR origem.CD_ATENDIMENTO<>d.CD_ATENDIMENTO OR origem.CD_OBJETO<>d.CD_OBJETO THEN
+   RETURN 'Vinculos do documento e da prescricao divergentes; requer revisao no MV.';
+  END IF;
+  IF origem.CD_TRATAMENTO IS NOT NULL OR origem.CD_PRE_MED_TRATMT IS NOT NULL THEN
+   RETURN 'Prescricao de tratamento exige rotina especifica.';
+  END IF;
+  RETURN NULL;
+ EXCEPTION WHEN NO_DATA_FOUND OR TOO_MANY_ROWS THEN
+  RETURN 'Origem do documento nao identificada de forma unica.';
+ END;
+ PROCEDURE destinatarios(p_autor VARCHAR2,p_documento NUMBER,p_busca VARCHAR2,resultado OUT SYS_REFCURSOR) IS
+  motivo VARCHAR2(1000);
+ BEGIN
+  validar_autor(p_autor);
+  motivo:=bloqueio(p_documento);
+  IF motivo IS NOT NULL THEN RAISE_APPLICATION_ERROR(-20011,motivo); END IF;
+  OPEN resultado FOR SELECT * FROM (
+   SELECT u.CD_USUARIO,u.NM_USUARIO,t.NM_TIP_PRESTA
+   FROM DBASGU.USUARIOS u JOIN DBAMV.PRESTADOR p ON p.CD_PRESTADOR=u.CD_PRESTADOR
+   LEFT JOIN DBAMV.TIP_PRESTA t ON t.CD_TIP_PRESTA=p.CD_TIP_PRESTA
+   WHERE u.SN_ATIVO='S' AND p.TP_SITUACAO='A'
+    AND u.CD_USUARIO<>(SELECT CD_USUARIO FROM DBAMV.PW_DOCUMENTO_CLINICO WHERE CD_DOCUMENTO_CLINICO=p_documento)
+    AND (p_busca IS NULL OR INSTR(UPPER(u.CD_USUARIO),UPPER(p_busca))>0 OR INSTR(UPPER(u.NM_USUARIO),UPPER(p_busca))>0)
+   ORDER BY u.NM_USUARIO,u.CD_USUARIO
+  ) WHERE ROWNUM<=50;
+ END;
+ PROCEDURE transferir(p_autor VARCHAR2,p_documento NUMBER,p_origem VARCHAR2,p_destino VARCHAR2,
+  p_motivo VARCHAR2,p_chave VARCHAR2,p_request VARCHAR2,p_evento OUT NUMBER) IS
+  d DBAMV.PW_DOCUMENTO_CLINICO%ROWTYPE; origem DBAMV.PRE_MED%ROWTYPE;
+  anterior BALE_IA.AJA_TRANSFERENCIA%ROWTYPE;
+  prestador NUMBER; autor_nome VARCHAR2(400); origem_nome VARCHAR2(400); destino_nome VARCHAR2(400);
+  permissao CHAR(1); mensagem VARCHAR2(1000); ver_usuario VARCHAR2(128); ver_prestador NUMBER;
+ BEGIN
+  SAVEPOINT aja_transferencia;
+  IF SYS_CONTEXT('USERENV','DB_NAME')<>'smlmv' THEN
+   RAISE_APPLICATION_ERROR(-20011,'Rotina homologada exclusivamente na base smlmv');
+  END IF;
+  validar_autor(p_autor);
+  SELECT SN_TRANSFERIR INTO permissao FROM BALE_IA.AJA_PERMISSAO WHERE CD_USUARIO=p_autor FOR UPDATE WAIT 5;
+  validar_autor(p_autor);
+  IF p_chave IS NULL OR NOT REGEXP_LIKE(p_chave,'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
+   OR p_origem IS NULL OR p_destino IS NULL OR LENGTH(TRIM(p_motivo))<10 OR p_motivo IS NULL OR LENGTH(p_motivo)>1000 THEN
+   RAISE_APPLICATION_ERROR(-20012,'Dados de transferencia invalidos');
+  END IF;
+  BEGIN
+   SELECT * INTO anterior FROM BALE_IA.AJA_TRANSFERENCIA WHERE CHAVE=p_chave;
+   IF anterior.CD_AUTOR<>p_autor OR anterior.CD_DOCUMENTO<>p_documento OR anterior.CD_ORIGEM<>p_origem
+    OR anterior.CD_DESTINO<>p_destino OR anterior.MOTIVO<>p_motivo THEN
+    RAISE_APPLICATION_ERROR(-20013,'Chave reutilizada para outra transferencia');
+   END IF;
+   p_evento:=anterior.ID_AUDITORIA; RETURN;
+  EXCEPTION WHEN NO_DATA_FOUND THEN NULL; END;
+  SELECT * INTO d FROM DBAMV.PW_DOCUMENTO_CLINICO WHERE CD_DOCUMENTO_CLINICO=p_documento FOR UPDATE WAIT 5;
+  IF d.CD_USUARIO<>p_origem OR d.CD_USUARIO IS NULL THEN RAISE_APPLICATION_ERROR(-20013,'Responsavel mudou; atualize a consulta'); END IF;
+  IF p_destino=p_origem THEN RAISE_APPLICATION_ERROR(-20012,'Destinatario ja responsavel'); END IF;
+  SELECT * INTO origem FROM DBAMV.PRE_MED WHERE CD_DOCUMENTO_CLINICO=p_documento FOR UPDATE WAIT 5;
+  mensagem:=bloqueio(p_documento);
+  IF mensagem IS NOT NULL THEN RAISE_APPLICATION_ERROR(-20011,mensagem); END IF;
+  SELECT u.NM_USUARIO,p.CD_PRESTADOR INTO destino_nome,prestador
+   FROM DBASGU.USUARIOS u JOIN DBAMV.PRESTADOR p ON p.CD_PRESTADOR=u.CD_PRESTADOR
+   WHERE u.CD_USUARIO=p_destino AND u.SN_ATIVO='S' AND p.TP_SITUACAO='A';
+  SELECT NM_USUARIO INTO autor_nome FROM DBASGU.USUARIOS WHERE CD_USUARIO=p_autor AND SN_ATIVO='S';
+  SELECT NM_USUARIO INTO origem_nome FROM DBASGU.USUARIOS WHERE CD_USUARIO=p_origem;
+  SELECT BALE_IA.AJA_AUDITORIA_SEQ.NEXTVAL INTO p_evento FROM DUAL;
+  INSERT INTO BALE_IA.AJA_TRANSFERENCIA VALUES(p_chave,p_autor,p_documento,p_origem,p_destino,p_motivo,p_evento);
+  UPDATE DBAMV.PRE_MED SET NM_USUARIO=p_destino,CD_PRESTADOR=prestador WHERE CD_PRE_MED=origem.CD_PRE_MED;
+  BALE_IA.PKG_GERENCIADOR_ASSINATURA.ATUALIZA_PRESTADOR(p_documento,prestador);
+  UPDATE DBAMV.PW_DOCUMENTO_CLINICO SET CD_USUARIO=p_destino
+   WHERE CD_DOCUMENTO_CLINICO=p_documento AND TP_STATUS='FECHADO' AND CD_USUARIO=p_origem;
+  IF SQL%ROWCOUNT<>1 THEN RAISE_APPLICATION_ERROR(-20013,'Documento alterado durante transferencia'); END IF;
+  SELECT CD_USUARIO,CD_PRESTADOR INTO ver_usuario,ver_prestador FROM DBAMV.PW_DOCUMENTO_CLINICO WHERE CD_DOCUMENTO_CLINICO=p_documento;
+  IF ver_usuario<>p_destino OR ver_prestador<>prestador OR bloqueio(p_documento) IS NOT NULL THEN
+   RAISE_APPLICATION_ERROR(-20013,'Falha na consistencia apos transferencia');
+  END IF;
+  INSERT INTO BALE_IA.AJA_AUDITORIA(ID,CD_AUTOR,NM_AUTOR,ACAO,DETALHE,CD_DOCUMENTO,
+   CD_ORIGEM,NM_ORIGEM,CD_DESTINO,NM_DESTINO,REQUEST_ID)
+   VALUES(p_evento,p_autor,autor_nome,'TRANSFERENCIA',p_motivo,p_documento,p_origem,origem_nome,p_destino,destino_nome,p_request);
+ EXCEPTION WHEN OTHERS THEN
+  ROLLBACK TO aja_transferencia;
+  RAISE;
+ END;
+END;

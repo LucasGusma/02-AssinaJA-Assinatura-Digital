@@ -1,0 +1,1412 @@
+TRG_PRE_MED_ALTERA_EVOLUCAO
+DECLARE
+   objetos varchar2(4000):= '#';
+BEGIN
+  --
+  FOR rReg IN (SELECT CD_OBJETO FROM USUARIO_BANCO.PAGU_OBJETO WHERE TP_OBJETO IN ('EVOMED'))
+  LOOP
+     objetos  := objetos||rReg.CD_OBJETO||'#';
+  END LOOP;
+  --
+  IF InStr(objetos,'#'||Nvl(:OLD.CD_OBJETO,:NEW.CD_OBJETO)||'#') > 0 AND
+     Nvl(:OLD.FL_IMPRESSO,'N') = 'S' AND
+	 DELETING THEN
+	 --
+     Raise_Application_Error(-20998,'A Evolução não pode ser excluída após a sua impressão !');
+     --
+  END IF;
+  --
+  IF InStr(objetos,'#'||Nvl(:OLD.CD_OBJETO,:NEW.CD_OBJETO)||'#') > 0 AND
+     Nvl(:OLD.FL_IMPRESSO,'N') = 'S' THEN
+    --
+    IF
+    :OLD.CD_PRE_MED                    = :NEW.CD_PRE_MED                     AND
+    :OLD.CD_ATENDIMENTO                = :NEW.CD_ATENDIMENTO                 AND
+    :OLD.CD_PRESTADOR                  = :NEW.CD_PRESTADOR                   AND
+    :OLD.DT_PRE_MED                    = :NEW.DT_PRE_MED                     AND
+    :OLD.HR_PRE_MED                    = :NEW.HR_PRE_MED                     AND
+    :OLD.CD_ID_USUARIO                 = :NEW.CD_ID_USUARIO                  AND
+    :OLD.SN_RN                         = :NEW.SN_RN                          AND
+    :OLD.DT_VALIDADE                   = :NEW.DT_VALIDADE                    AND
+    :OLD.FL_PRINCIPAL                  = :NEW.FL_PRINCIPAL                   AND
+    :OLD.FL_IMPRESSO                   = :NEW.FL_IMPRESSO                    AND
+    :OLD.TP_PRE_MED                    = :NEW.TP_PRE_MED                     AND
+    :OLD.DT_REFERENCIA                 = :NEW.DT_REFERENCIA                  AND
+    :OLD.SN_TRANSCRICAO                = :NEW.SN_TRANSCRICAO                 AND
+
+    nvl(:old.CD_SETOR              ,0) = nvl(:new.CD_SETOR                      ,0) AND
+    nvl(:old.CD_SOLSAI_PRO         ,0) = nvl(:new.CD_SOLSAI_PRO                 ,0) AND
+    nvl(:old.CD_UNID_INT           ,0) = nvl(:new.CD_UNID_INT                   ,0) AND
+    nvl(:old.CD_IMPORTA_REG_FAT    ,0) = nvl(:new.CD_IMPORTA_REG_FAT            ,0) AND
+    nvl(:old.CD_IMPORTA_REG_AMB    ,0) = nvl(:new.CD_IMPORTA_REG_AMB            ,0) AND
+    nvl(:old.CD_PRE_PAD            ,0) = nvl(:new.CD_PRE_PAD                    ,0) AND
+    nvl(:old.CD_OBJETO             ,0) = nvl(:new.CD_OBJETO                     ,0) AND
+    nvl(:old.CD_REGISTRO_CLINICO   ,0) = nvl(:new.CD_REGISTRO_CLINICO           ,0) AND
+    nvl(:old.CD_PRE_MED_TRATMT     ,0) = nvl(:new.CD_PRE_MED_TRATMT             ,0) AND
+    nvl(:old.CD_DOCUMENTO_CLINICO  ,0) = nvl(:new.CD_DOCUMENTO_CLINICO          ,0) AND
+    nvl(:old.NR_CICLO              ,0) = nvl(:new.NR_CICLO                      ,0) AND
+    nvl(:old.NR_SESSAO             ,0) = nvl(:new.NR_SESSAO                     ,0) AND
+    nvl(:old.CD_TRATAMENTO         ,0) = nvl(:new.CD_TRATAMENTO                 ,0) AND
+
+    nvl(:old.NM_USUARIO                    ,'0') = nvl(:new.NM_USUARIO                    ,'0') AND
+    nvl(:old.SN_FECHADO                    ,'0') = nvl(:new.SN_FECHADO                    ,'0') AND
+    nvl(:old.NM_USUARIO_AUTORIZADOR        ,'0') = nvl(:new.NM_USUARIO_AUTORIZADOR        ,'0') AND
+    nvl(:old.SN_ALTERA_PROTOCOLO_TRATAMENTO,'0') = nvl(:new.SN_ALTERA_PROTOCOLO_TRATAMENTO,'0') AND
+    nvl(:old.SN_PRESCRICAO_DIA_SEGUINTE    ,'0') = nvl(:new.SN_PRESCRICAO_DIA_SEGUINTE    ,'0') AND
+    nvl(:old.CD_USUARIO_CONVERSAO_PRESCRIC ,'0') = nvl(:new.CD_USUARIO_CONVERSAO_PRESCRIC ,'0') AND
+    nvl(:old.NM_PRESCRICAO                 ,'0') = nvl(:new.NM_PRESCRICAO                 ,'0') AND
+    nvl(:old.CD_PRE_MED_INTEGRA            ,'0') = nvl(:new.CD_PRE_MED_INTEGRA            ,'0') AND
+
+    nvl(:old.DH_CRIACAO              ,To_Date('11/11/2011','DD/MM/YYYY')) = nvl(:new.DH_CRIACAO              ,To_Date('11/11/2011','DD/MM/YYYY')) AND
+    nvl(:old.DH_IMPRESSAO            ,To_Date('11/11/2011','DD/MM/YYYY')) = nvl(:new.DH_IMPRESSAO            ,To_Date('11/11/2011','DD/MM/YYYY')) AND
+    nvl(:old.DH_CONVERSAO_PRESCRICAO ,To_Date('11/11/2011','DD/MM/YYYY')) = nvl(:new.DH_CONVERSAO_PRESCRICAO ,To_Date('11/11/2011','DD/MM/YYYY'))
+
+    THEN
+       --
+       Raise_Application_Error(-20999,'A Evolução não pode ser alterada após a sua impressão !');
+       --
+    END IF;
+    --
+  END IF;
+  --
+END;
+
+
+TRG_PRE_MED_REG_DOCUM_CLINC
+DECLARE
+  v_cd_documento_clinico  NUMBER;
+  v_cd_tipo_documento NUMBER;
+BEGIN
+  IF INSERTING THEN
+    IF :NEW.tp_pre_med = 'I' THEN
+      select usuario_banco.seq_pw_documento_clinico.nextval
+        into v_cd_documento_clinico
+        from dual;
+		  insert into usuario_banco.pw_documento_clinico ( cd_documento_clinico
+                                                 , cd_tipo_documento
+                                                 , tp_status
+                                                 , dh_referencia
+                                                 , dh_criacao
+                                                 , dh_fechamento
+                                                 , dh_impresso
+											     , dh_documento
+                                                 , cd_paciente
+                                                 , cd_prestador
+                                                 , cd_atendimento
+                                                 , cd_usuario
+											     , cd_objeto)
+		                                  values ( v_cd_documento_clinico
+                                                 , usuario_banco.FNC_PEP_BUSCA_CODIGO_TIP_DOCUM('ADMISS')
+                                                 , 'ABERTO'  -->> tp_status
+                                                 , :new.dt_referencia
+                                                 , SYSDATE
+                                                 , NULL
+                                                 , NULL
+											     , sysdate
+                                                 , usuario_banco.FNC_PEP_BUSCA_CODIGO_PACIENTE(:new.cd_atendimento)
+                                                 , :new.cd_prestador
+                                                 , :new.cd_atendimento
+                                                 , :new.nm_usuario
+											     , :new.cd_objeto);
+      -- Seta na pre_med o cd_documento_clinico associado
+      :new.cd_documento_clinico := v_cd_documento_clinico;
+    END IF;
+  ELSIF UPDATING THEN
+    IF :NEW.fl_impresso = 'S' OR :new.tp_pre_med = 'I' AND :NEW.fl_impresso = 'N' AND :new.sn_fechado = 'S' THEN
+      UPDATE Dbamv.Pw_Documento_clinico SET tp_status = 'FECHADO', dh_fechamento = nvl(dh_fechamento,SYSDATE)
+      WHERE cd_documento_Clinico = :Old.Cd_Documento_Clinico and tp_status <> 'ASSINADO';
+    END IF;
+    --verifica se o registro foi reaberto e se não é prescrição tratamento filha
+    IF ((:OLD.FL_IMPRESSO = 'S') AND (:NEW.FL_IMPRESSO = 'N'))
+      AND ((:new.tp_pre_med <> 'F' AND usuario_banco.fnc_pep_busca_tipo_objeto(:new.cd_objeto) = 'TRATMT')
+            OR usuario_banco.fnc_pep_busca_tipo_objeto(:new.cd_objeto) <> 'TRATMT') THEN
+      --Recupera cd_tipo_documento do documento clínico que foi cancelado
+        v_cd_tipo_documento := usuario_banco.fnc_pep_busca_cod_tip_doc_clin(:Old.Cd_Documento_Clinico);
+      -- Cancela documento clínico pois a prescrição foi reaberta.
+      UPDATE Dbamv.Pw_Documento_clinico SET tp_status = 'CANCELADO'
+      WHERE cd_documento_Clinico = :Old.Cd_Documento_Clinico;
+      -- Inserir novo documento clínico após o documento que estava associado à prescrição cancelada ter sido cancelado também.
+      select usuario_banco.seq_pw_documento_clinico.nextval
+        into v_cd_documento_clinico
+        from dual;
+		  insert into usuario_banco.pw_documento_clinico ( cd_documento_clinico
+                                                 , cd_tipo_documento
+                                                 , tp_status
+                                                 , dh_referencia
+                                                 , dh_criacao
+                                                 , dh_fechamento
+                                                 , dh_impresso
+											     , dh_documento
+                                                 , cd_paciente
+                                                 , cd_prestador
+                                                 , cd_atendimento
+                                                 , cd_usuario
+                                                 , cd_objeto
+                                                 , cd_documento_cancelado)
+		                                  values ( v_cd_documento_clinico
+                                                 , v_cd_tipo_documento
+                                                 , 'ABERTO'  -->> tp_status
+                                                 , :new.dt_referencia
+                                                 , SYSDATE
+                                                 , NULL
+                                                 , NULL
+											     , sysdate
+                                                 , usuario_banco.FNC_PEP_BUSCA_CODIGO_PACIENTE(:new.cd_atendimento)
+                                                 , :new.cd_prestador
+                                                 , :new.cd_atendimento
+                                                 , :new.Nm_Usuario
+                                                 , :new.cd_objeto
+                                                 , :old.cd_documento_clinico);
+      -- Seta na pre_med o novo cd_documento_clinico associado
+      :new.cd_documento_clinico := v_cd_documento_clinico;
+    END IF;
+    --Para casos de conversão de prescrição de atendimento de urgência para internação, precisa atualizar o atendimento do documento clínico
+    IF :old.cd_atendimento <> :new.cd_atendimento THEN
+        UPDATE Dbamv.Pw_Documento_clinico 
+           SET cd_atendimento = :new.cd_atendimento
+         WHERE cd_documento_Clinico = :Old.Cd_Documento_Clinico;
+    END IF;
+  ELSIF DELETING THEN
+     DELETE FROM usuario_banco.pw_documento_clinico
+      WHERE cd_documento_clinico =  :Old.Cd_documento_Clinico;
+  END IF;
+END;
+
+
+TRG_LANCA_PRESC_FFCV
+declare
+  -- PDA 86938 -  Campos "cd_importa_reg_fat" e "cd_importa_reg_amb" - com base nesse dois campos sera verificado
+  -- se a trigger realmente foi executada
+BEGIN
+  /* PDA 281046 (Início) - 06/04/2009 - Diego Costa - Melhoria de performance */
+  /*
+  for x in (select ate.tp_atendimento
+        from usuario_banco.atendime ate
+            ,usuario_banco.convenio con
+            ,usuario_banco.empresa_convenio
+       where ate.cd_atendimento = :new.cd_atendimento
+         and ate.cd_multi_empresa = usuario_banco.Pkg_Mv2000.Le_Empresa
+         and con.cd_convenio = empresa_convenio.cd_convenio                    */                                                                    /* pda 118607/129023*/
+  /*       and empresa_convenio.cd_multi_empresa = usuario_banco.pkg_mv2000.le_empresa */                                                                    /* pda 118607/129023*/
+  /*       and con.cd_convenio = ate.cd_convenio) loop */
+    --
+  for x in (select ate.tp_atendimento
+              from usuario_banco.atendime ate
+             where ate.cd_atendimento = :new.cd_atendimento
+               and ate.cd_multi_empresa = usuario_banco.Pkg_Mv2000.Le_Empresa) LOOP
+  /* PDA 281046 (Fim) */
+    if x.Tp_Atendimento = 'I' then
+      :new.cd_importa_reg_fat := 0;
+    else
+      :new.cd_importa_reg_amb := 0;
+    end if;
+  end loop;
+end;
+
+
+
+TRG_PROD_NPADRONIZADO
+DECLARE
+ Cursor C_ItPreMed( nCdPreMed In number) is
+   Select cd_itpre_med, ds_npadronizado,
+          cd_npadronizado
+   from   usuario_banco.itpre_med
+   where  cd_pre_med = nCdPreMed
+   And    ItPre_Med.Sn_Solicita  = 'S' --PDA 95239
+   and    ds_npadronizado is not null;
+ Cursor C_Prod_nPadronizado( nCdItPreMed In number) is
+   Select flag_lib_futuro
+   from   usuario_banco.lib_prod_npadronizado
+   where  cd_itpre_med = nCdItPreMed;
+   Cursor C_Seq IS
+     Select Dbamv.SEQ_LIB_PROD_NPADRONIZADO.NextVal
+       From Dual;
+  cSnLibFuturo VarChar2(1);
+  nCdProdNPadronizado Number;
+begin
+ if :old.fl_impresso = 'N' and :new.fl_impresso = 'S' Then
+   For C_item In C_ItPreMed(:Old.cd_pre_med) Loop
+       cSnLibFuturo := null;
+       Open  C_Prod_nPadronizado(C_Item.cd_itpre_med);
+       Fetch C_Prod_nPadronizado Into cSnLibFuturo;
+       Close C_Prod_nPadronizado;
+       if NVL(cSnLibFuturo, 'N') = 'N' Then -- Verifica se é necessario liberar novamente.
+          Open  C_Seq;
+          Fetch C_Seq Into nCdProdNPadronizado;
+          Close C_Seq;
+             INSERT INTO usuario_banco.lib_prod_npadronizado (cd_prod_npadronizado,
+                         ds_prod_npadronizado, cd_itpre_med, cd_produto,
+                         dt_liberacao, cd_id_usuario, tp_acao,
+                         ds_justificativa, flag_lib_futuro )
+             VALUES(nCdProdNPadronizado,C_ITEM.ds_npadronizado,
+                    C_ITEM.cd_itpre_med, C_ITEM.cd_npadronizado, null,
+                    null, 'I', null, 'N');
+       end if; -- Liberacao Futuro
+   End Loop; -- Loop
+ end if; -- Impresso
+end;
+
+
+
+TRG_PRE_MED_SUSP_SOL
+DECLARE
+
+    deadlock_detected   EXCEPTION ;
+    PRAGMA EXCEPTION_INIT(deadlock_detected, -60);
+cursor citsolsaipro is
+	select itsolsai_pro.cd_itsolsai_pro
+	      ,solsai_pro.cd_solsai_pro
+	      ,solsai_pro.tp_situacao
+-- Pda 321635 Inicio
+        ,nvl(itsolsai_pro.qt_atendida,0) qt_atendida
+-- Pda 321635 Fim
+      from usuario_banco.itsolsai_pro
+          ,usuario_banco.itpre_med
+          ,usuario_banco.solsai_pro
+     where solsai_pro.cd_solsai_pro  = itsolsai_pro.cd_solsai_pro
+       and itsolsai_pro.cd_itpre_med = itpre_med.cd_itpre_med_canc
+       and itpre_med.cd_pre_med      = :new.cd_pre_med
+       and itpre_med.sn_cancelado    = 'S'
+       and itpre_med.sn_solicita     = 'S';
+       
+Cursor cExisteFracionamento(pcd_itsolsai_pro Number) Is
+    Select Count(*) qtd
+      From usuario_banco.fracionamento 
+     Where cd_itsolsai_pro = pcd_itsolsai_pro;	       
+
+Cursor cExisteItemNaoCancelado(pcd_solsai_pro Number) Is
+-- Pda 321635 Inicio
+/*
+	 Select 1
+       From usuario_banco.itsolsai_pro
+           ,usuario_banco.solsai_pro
+      Where solsai_pro.cd_solsai_pro = pcd_solsai_pro
+        And solsai_pro.cd_solsai_pro = itsolsai_pro.cd_solsai_pro
+        And nvl(itsolsai_pro.sn_conf_determ_usu,'N') = 'N'
+        And rownum = 1;
+*/
+   Select Max(todos)      todos
+         ,Max(atendidos)  atendidos
+         ,Max(cancelados) cancelados
+         ,Max(abertos)    abertos
+   From (Select Count(*)  todos
+               ,0         atendidos
+               ,0         cancelados
+               ,0         abertos
+           From usuario_banco.itsolsai_pro
+               ,usuario_banco.solsai_pro
+          Where solsai_pro.cd_solsai_pro = pcd_solsai_pro
+            And solsai_pro.cd_solsai_pro = itsolsai_pro.cd_solsai_pro
+         Union
+         Select 0         todos
+               ,Count(*)  atendidos
+               ,0         cancelados
+               ,0         abertos
+           From usuario_banco.itsolsai_pro
+               ,usuario_banco.solsai_pro
+          Where solsai_pro.cd_solsai_pro         = pcd_solsai_pro
+            And solsai_pro.cd_solsai_pro         = itsolsai_pro.cd_solsai_pro
+            and nvl(itsolsai_pro.qt_atendida,0) <> 0
+            And upper(nvl(ds_alerta_automatico,'xyz')) Like '%ITEM%N%ATENDIDO%CANCELADO%'
+         Union
+         Select 0         todos
+               ,0         atendidos
+               ,Count(*)  cancelados
+               ,0         abertos
+           From usuario_banco.itsolsai_pro
+               ,usuario_banco.solsai_pro
+          Where solsai_pro.cd_solsai_pro        = pcd_solsai_pro
+            And solsai_pro.cd_solsai_pro        = itsolsai_pro.cd_solsai_pro
+            And upper(nvl(ds_alerta_automatico,'xyz')) Like '%ITEM%N%ATENDIDO%CANCELADO%'
+         Union
+         Select 0         todos
+               ,0         atendidos
+               ,0         cancelados
+               ,Count(*)  abertos
+           From usuario_banco.itsolsai_pro
+               ,usuario_banco.solsai_pro
+          Where solsai_pro.cd_solsai_pro         = pcd_solsai_pro
+            And solsai_pro.cd_solsai_pro         = itsolsai_pro.cd_solsai_pro
+            and nvl(itsolsai_pro.qt_atendida,0)  = 0
+            And upper(nvl(ds_alerta_automatico,'xyz')) Like '%ITEM%N%ATENDIDO%CANCELADO%');
+-- Pda 321635 Fim
+
+-- Pda 321635 Inicio
+--vDummy number;
+ vExisteItemNaoCancelado cExisteItemNaoCancelado%rowtype;
+ vExisteFracionamento cExisteFracionamento%rowtype;
+-- Pda 321635 Fim
+
+begin
+
+	if nvl(:old.fl_impresso,'N') = 'N' and :new.fl_impresso = 'S' then
+
+     for ritsolsaipro in citsolsaipro
+     loop
+         -- Pda 321635 Inicio
+         -- If ritsolsaipro.tp_situacao = 'P' Then
+         If ((ritsolsaipro.tp_situacao = 'P') or (ritsolsaipro.tp_situacao = 'C' and ritsolsaipro.qt_atendida = 0)) Then -- Pda 321635 Fim
+            Update usuario_banco.itsolsai_pro
+               Set sn_conf_determ_usu   = 'S'
+                  ,ds_alerta_automatico = 'Atenção: O Item não será atendido, pois foi cancelado na prescrição.'
+             Where cd_itsolsai_pro      = ritsolsaipro.cd_itsolsai_pro;
+            --
+            Open  cExisteFracionamento(ritsolsaipro.cd_itsolsai_pro);
+            Fetch cExisteFracionamento Into vExisteFracionamento;
+               if vExisteFracionamento.qtd > 0 Then
+		            Update usuario_banco.fracionamento
+			   	         Set qt_sobra        = 0
+			       	   Where cd_itsolsai_pro = ritsolsaipro.cd_itsolsai_pro;
+	       	   End if;
+	       	Close cExisteFracionamento;
+            --
+            Open  cExisteItemNaoCancelado(ritsolsaipro.cd_solsai_pro);
+            Fetch cExisteItemNaoCancelado Into vExisteItemNaoCancelado;
+               if vExisteItemNaoCancelado.todos = vExisteItemNaoCancelado.atendidos then
+                  Update usuario_banco.solsai_pro
+                     Set tp_situacao   = 'S'
+                   Where cd_solsai_pro = ritsolsaipro.cd_solsai_pro;
+               elsif vExisteItemNaoCancelado.todos = vExisteItemNaoCancelado.cancelados then
+                  Update usuario_banco.solsai_pro
+                     Set tp_situacao   = 'A'
+                   Where cd_solsai_pro = ritsolsaipro.cd_solsai_pro;
+               elsif  vExisteItemNaoCancelado.todos = (vExisteItemNaoCancelado.atendidos + vExisteItemNaoCancelado.cancelados) then
+                  Update usuario_banco.solsai_pro
+                     Set tp_situacao   = 'S'
+                   Where cd_solsai_pro = ritsolsaipro.cd_solsai_pro;
+               elsif vExisteItemNaoCancelado.atendidos > 0 then
+                  Update usuario_banco.solsai_pro
+                     Set tp_situacao   = 'C'
+                   Where cd_solsai_pro = ritsolsaipro.cd_solsai_pro;
+               End If; -- Pda 321635 Fim
+				    Close cExisteItemNaoCancelado;
+            --
+         End If;
+     end loop;
+	end if;
+
+  Exception
+  When deadlock_detected Then
+      raise_application_error (-20001,'A prescrcição está em atendimento.');
+
+
+
+end;
+
+
+TRG_U_PRE_MED
+BEGIN
+/****************************************************************************************************************
+AUTOR..........: Desconhecido                                        Autor da definição: Keilla
+DATA ..........: 02/03/2004
+FUNCIONALIDADE.: Dispara qdo é atualizada a flag de impressão da prescrição. Ao alterar de 'N' p/ 'S'
+                 (imprimir a prescrição),é criada a equipe médica na conta do paciente p/ os procedimentos da
+                 referida prescrição que exigem equipe.Qdo altera de 'S' p/ 'N' é excluído os ítens de itped_lab
+*****************************************************************************************************************/
+DECLARE
+   CURSOR C_PED_LAB IS
+      SELECT cd_ped_lab
+      FROM   usuario_banco.ped_lab
+      WHERE  cd_pre_med = :new.cd_pre_med;
+   vCd_Mov_Cardapio NUMBER;
+   vTp_Mov          CHAR;
+   -- pda 87035 inicio( Verifica o tipo de conv~enio do atendimento)
+   Cursor cTipoConv is
+     Select conv.tp_convenio
+       From usuario_banco.convenio conv,
+            usuario_banco.atendime atend
+        Where atend.cd_convenio = conv.cd_convenio
+          and atend.cd_multi_empresa = usuario_banco.Pkg_Mv2000.Le_Empresa
+          and atend.cd_atendimento = :new.cd_atendimento;  -->> Não é preciso de condição de multi-empresa, pois a restrição deve ser feita  em tela
+   --PDA 256464
+   Cursor cCdPaciente (pCd_Paciente Number)Is
+     Select Cd_Res_Lei, Cd_Pre_Med
+       From Dbamv.Res_Lei
+      Where Cd_Paciente = pCd_Paciente
+        And Trunc(Dt_Reserva) Between Trunc(Sysdate) - 1
+                                  And Trunc(Sysdate + 12/24); -- PDA 542100
+   vTpConvenio             varchar2(1):=null;
+   vCd_Res_Lei             Number;
+   vCd_Pre_Med_Res_Lei     Number; -- PDA 542100
+   -- pda 87035 fim
+  -- PDA 155599 (Inicio) - Henrique Antunes - 14/12/2006
+  Cursor C_ConfigPresc is
+  select sn_prescricao_automatica
+  from   usuario_banco.config_ffcv
+  where  cd_multi_empresa = usuario_banco.pkg_mv2000.le_empresa;
+  cSnPreMed varchar2(1);
+  -- PDA 155599 (Fim)
+  --
+  -- Cursor para obter o tipo de objeto da prescrição
+  CURSOR c_tp_objeto IS
+    SELECT tp_objeto
+      FROM usuario_banco.pagu_objeto
+     WHERE cd_objeto = :new.cd_objeto;
+  -- Cursor para obter o valor do parâmetro da chave
+  CURSOR c_vl_parametro IS
+    SELECT pr.VL_PARAMETRO
+      FROM usuario_banco.Pw_Parametro_Pagu_Objeto PP
+         , usuario_banco.pagu_objeto po
+         , usuario_banco.pagu_objeto_parametro pr
+     WHERE pp.cd_tipo_documento = po.cd_tipo_documento
+       AND po.cd_objeto = pr.cd_objeto
+       AND pp.nm_parametro = 'SN_CRIAR_NOVA_RESERVA_LEITO'
+       AND po.cd_objeto = :new.cd_objeto;
+  -- Armazena o tipo de objeto da prescrição
+  v_tp_objeto usuario_banco.pagu_objeto.tp_objeto%type;
+  -- Armazena o valor do parâmetro do objeto INTERN
+  v_vl_parametro usuario_banco.pagu_objeto_parametro.vl_parametro%type;
+  -- Indica se a prescrição deve gerar solicitações:
+  v_sn_gerar_solicitacoes VARCHAR2(1);
+BEGIN
+  OPEN c_tp_objeto;
+  FETCH c_tp_objeto INTO v_tp_objeto;
+  CLOSE c_tp_objeto;
+  -- As prescrições que possuem tipo de objeto RECEIT não devem gerar solicitações
+  IF v_tp_objeto IS NOT NULL AND v_tp_objeto = 'RECEIT' THEN
+    v_sn_gerar_solicitacoes := 'N';
+  ELSE
+    v_sn_gerar_solicitacoes := 'S';
+  END IF;
+
+  IF v_tp_objeto IS NOT NULL AND v_tp_objeto = 'INTERN' THEN
+
+    OPEN  c_vl_parametro;
+    FETCH c_vl_parametro INTO v_vl_parametro;
+    CLOSE c_vl_parametro;
+  END IF;
+
+  -- PDA 154303(Inicio)
+  -- Geracao automatica da pre-internacao, apenas para prescricao de internado
+  if (:old.fl_impresso = 'N' and :new.fl_impresso = 'S' and :new.tp_pre_med = 'A') then
+    for x in (select pac.cd_paciente        ,pac.cd_cidade                                                ,pac.nm_paciente
+                    ,Decode(pac.tp_sexo,'I','A',pac.tp_sexo) tp_sexo  ,pac.tp_estado_civil                ,pac.ds_endereco
+                    ,pac.cd_profissao       ,pac.nr_cep                                                   ,pac.nr_documento
+                    ,pac.nr_fone            ,pac.nm_usuario                                               ,pac.nr_cpf
+                    ,pac.ds_complemento     ,pac.nr_endereco                                              ,pac.ds_observacao
+/* PDA 499386 AROS */,ate.cd_multi_empresa   ,pac.nm_bairro                                                ,ate.cd_atendimento
+                    ,ate.cd_ori_ate         ,ate.cd_convenio                                              ,ate.cd_pro_int
+                    ,ate.cd_prestador       ,ate.cd_leito                                                 ,ate.cd_cid
+                    ,ate.cd_servico   ,nvl(ate.dt_prevista_alta, add_months(sysdate,1)) dt_prevista_alta  ,ate.cd_tip_acom
+                    ,ate.dt_val_guia        ,ate.nr_guia                                                  ,ate.cd_con_pla
+                    ,ate.cd_tipo_internacao ,ate.sn_acompanhante                                          ,ate.cd_especialid
+                    ,ate.cd_sub_plano       ,ate.nr_carteira                                              ,ate.dt_validade
+                    ,ate.nm_empresa
+                from usuario_banco.atendime  ate
+                    ,usuario_banco.paciente  pac
+               where ate.cd_atendimento = :new.cd_atendimento
+                 and ate.cd_multi_empresa = usuario_banco.Pkg_Mv2000.Le_Empresa
+                 and ate.cd_paciente    = pac.cd_paciente)loop
+      --PDA 256464
+      Open  cCdPaciente(x.cd_paciente);
+      Fetch cCdPaciente Into vCd_Res_Lei, vCd_Pre_Med_Res_Lei; -- PDA 542100
+      If vCd_Res_Lei is null OR (vCd_Res_Lei IS NOT NULL AND Nvl(v_vl_parametro,'N') = 'S') then
+          insert into usuario_banco.res_lei
+                (cd_res_lei                ,nm_paciente       ,ds_tratamento
+                ,dt_reserva                ,dt_prev_alta      ,tp_sexo
+                ,dt_prev_internacao        ,nr_fone           ,cd_cidade
+                ,cd_convenio               ,cd_servico        ,cd_tip_acom
+                ,cd_prestador              ,dt_chamado        ,hr_chamado
+                ,cd_atendimento            ,cd_paciente       ,cd_leito
+                ,sn_ativo                  ,cd_ori_ate        ,cd_con_pla
+                ,sn_acompanhante           ,cd_cid            ,cd_pro_int
+                ,cd_tipo_internacao        ,nr_guia           ,dt_val_guia
+                ,nm_usuario                ,cd_senha          ,sn_checa_leito
+                ,cd_tip_paren              ,nm_responsavel    ,tp_estado_civil
+                ,cd_profissao              ,ds_nacionalidade  ,nr_fone_res
+                ,ds_contato_familia        ,ds_endereco_res   ,nr_endereco_res
+                ,ds_complemento_res        ,nm_bairro_res     ,cd_cidade_res
+                ,ds_documento              ,nr_cpf            ,nr_carteira
+                ,dt_validade               ,dt_ult_pgto       ,cd_empresa_carteira
+                ,nm_empresa                ,nm_titular        ,nr_dias_autorizados
+                ,ds_observacao             ,cd_multi_empresa  ,cd_aviso_cirurgia
+                ,nm_usuario_desativa       ,nr_cep_res        ,nr_horas_autorizadas
+                ,cd_especialid             ,cd_sub_plano      ,cd_unid_int
+                ,cd_pre_med)
+          values
+                (usuario_banco.seq_res_lei.nextval   ,x.nm_paciente       ,null
+                ,sysdate                     ,x.dt_prevista_alta  ,x.tp_sexo
+                ,sysdate                     ,x.nr_fone           ,x.cd_cidade
+                ,x.cd_convenio               ,x.cd_servico        ,null
+                ,x.cd_prestador              ,null                ,null
+                ,null                        ,x.cd_paciente       ,null
+                ,'S'                         ,x.cd_ori_ate        ,x.cd_con_pla
+                ,x.sn_acompanhante           ,x.cd_cid            ,x.cd_pro_int
+                ,x.cd_tipo_internacao        ,x.nr_guia           ,x.dt_val_guia
+                ,x.nm_usuario                ,null                ,null
+                ,null                        ,null                ,x.tp_estado_civil
+                ,x.cd_profissao              ,null                ,x.nr_fone
+                ,null                        ,x.ds_endereco       ,x.nr_endereco
+                ,x.ds_complemento            ,x.nm_bairro         ,x.cd_cidade
+                ,x.nr_documento              ,x.nr_cpf            ,x.nr_carteira
+                ,x.dt_validade               ,null                ,null
+                ,x.nm_empresa                ,null                ,null
+                ,x.ds_observacao             ,x.cd_multi_empresa  ,null
+                ,null                        ,x.nr_cep            ,null
+                ,x.cd_especialid             ,x.cd_sub_plano      ,:new.cd_unid_int
+                ,:new.cd_pre_med);
+      Else -- PDA 542100 (inicio)
+		Update Dbamv.Res_Lei
+		   Set Cd_Pre_Med = :New.Cd_Pre_Med, Dt_Prev_Internacao = sysdate
+		 Where Cd_Res_Lei = vCd_Res_Lei;
+      End If; -- PDA 542100 (fim)
+      Close cCdPaciente;
+    end loop;
+    -- PDA 154303(Fim)
+  end if;
+  If ((:old.fl_impresso = 'N' and :new.fl_impresso = 'S' and :new.tp_pre_med Not In ( 'A', 'F' ) )
+   or (:old.tp_pre_med In ( 'A', 'F' ) and :new.tp_pre_med = 'M')) then
+    --
+    Open C_ConfigPresc ;
+    Fetch C_ConfigPresc into cSnPreMed ;
+    Close C_ConfigPresc ;
+    if nvl(cSnPreMed,'N') <> 'C' and v_sn_gerar_solicitacoes = 'S' then
+       usuario_banco.prc_lanca_presc_ffcv (:new.cd_pre_med
+                               ,:old.cd_pre_med
+                               ,:new.cd_atendimento
+                               ,:old.cd_atendimento
+                               ,:new.hr_pre_med
+                               ,:old.hr_pre_med
+                               ,:new.cd_unid_int
+                               ,:old.cd_unid_int
+                               ,:new.cd_prestador
+                               ,:old.cd_prestador
+                               ,:new.cd_setor
+                               ,:old.cd_setor
+                               ,:new.dt_pre_med
+                               ,:old.dt_pre_med
+                               ,:new.fl_impresso
+                               --,:old.fl_impresso -- 320791 Comentado
+                               ,'N'                -- 320791
+                               ,null
+                               ,null);
+    End If;
+    --
+      IF v_sn_gerar_solicitacoes = 'S' THEN
+        USUARIO_BANCO.GERA_PED_EXA_LAB(:NEW.CD_PRE_MED, :NEW.CD_ATENDIMENTO, :NEW.DT_PRE_MED, :NEW.HR_PRE_MED, :NEW.CD_PRESTADOR
+        -- PDA 204742 Inicio
+                           , :NEW.CD_SETOR);
+        -- PDA 204742 Fim
+        USUARIO_BANCO.GERA_PSND(:NEW.CD_PRE_MED
+                     ,:NEW.CD_ATENDIMENTO
+                     ,pkg_pagu_itpremed.fnc_retorna_primeira_dieta
+                     ,vCd_Mov_Cardapio
+                     ,vTp_Mov
+                     ,Dbamv.Fnc_Mv_Recupera_Data_Hora(:New.Dt_Pre_Med, :New.Hr_Pre_Med)); -- PDA 549206
+        -->> Trata o retorno da Gera_Psnd para impressao DO Aviso
+        If vCd_Mov_Cardapio is not null Then -- (Tércio Arruda)
+            Dbamv.Imprime_Aviso_Psnd(:NEW.Cd_Atendimento, vCd_Mov_Cardapio, vTp_Mov);
+        End If;
+        --
+        USUARIO_BANCO.GERA_PSDI(:NEW.CD_PRE_MED, :NEW.CD_ATENDIMENTO, :NEW.DT_PRE_MED, :NEW.HR_PRE_MED, :NEW.CD_PRESTADOR, :NEW.CD_UNID_INT,  :NEW.CD_SETOR);
+      end if;
+      USUARIO_BANCO.ENVIA_MSG_ITENS_PRESC( :Old.Cd_Setor, :Old.Cd_Atendimento, :Old.Cd_Pre_Med, Trunc( :Old.Dt_Pre_Med ) + ( :Old.Hr_Pre_Med -  Trunc( :Old.Hr_Pre_Med ) ) );
+      ---- Integracao com SIH_SUS ----------------------------------------------
+      usuario_banco.pack_lanca_ffis.Lanca_PAGU_FFIS ( :NEW.CD_ATENDIMENTO
+                                            , :NEW.CD_PRE_MED
+                                            , :NEW.CD_SETOR
+                                            , :NEW.DT_PRE_MED
+                                            , :NEW.HR_PRE_MED
+                                            , :NEW.CD_PRESTADOR);
+      --------------------------------------------------------------------------
+      ---- Integracao com SIH_SUS ----------------------------------------------
+      -- Pda 395953 inicio
+      /*usuario_banco.pack_lanca_ffas.Lanca_PAGU_FFAS( :NEW.CD_ATENDIMENTO
+                                           , :NEW.CD_PRE_MED
+                                           , :NEW.CD_SETOR
+                                           , :NEW.CD_PRESTADOR );*/
+
+
+	    IF not (v_tp_objeto = 'TRATMT' and :NEW.CD_PRE_MED_TRATMT IS NULL) THEN
+
+          usuario_banco.prc_ffas_lanca_pagu( :NEW.CD_ATENDIMENTO
+                                   , :NEW.CD_PRE_MED
+                                   , :NEW.CD_SETOR
+                                   , :NEW.CD_PRESTADOR);
+
+		  end if;
+      -- Pda 395953 fim
+      --------------------------------------------------------------------------
+      --------------------------------------------------------------------------
+      ---- Inclue ocorrencia de Antimicrobiano em USUARIO_BANCO.HIST_AUDIT_PSIH --------
+      usuario_banco.prc_lanca_hist_audit_psih ( :NEW.CD_ATENDIMENTO, :NEW.CD_PRE_MED, :NEW.DT_PRE_MED, :NEW.HR_PRE_MED );
+      --------------------------------------------------------------------------
+      --------------------------------------------------------------------------
+      -- PDA 270868 (Início) - Ins
+      --inserir registro de infecção automaticamente
+      ---- Insere registro de infecção em USUARIO_BANCO.Prc_Psih_Insere_Registro_Infec -
+      If :OLD.FL_IMPRESSO = 'N' and :NEW.FL_IMPRESSO = 'S' Then
+        --PDA 423873 - processo de prorrogação atm -- PDA 538560 (inicio)
+     /*
+      * GGMS - OP 30505 - Retirado trecho abaixo e incluido na procedure prc_pagu_fechar_prescricao para corrigir DEADLOCK na prescrição medica.*
+      For x In cDadosProrrogacao LOOP
+          USUARIO_BANCO.PRC_PSIH_AUDITA_PRORROGACAO( :new.cd_atendimento,
+                                              x.cd_Produto,
+                                             :new.dt_pre_med,
+                                              x.nr_dia,
+                                              x.cd_itpre_med,
+                                             'T',
+                                              vMensagem,
+                                              vAcaoProrrogacao
+                                           );
+        END LOOP;
+
+        --PDA 423873 - (Fim) -- PDA 538560 (fim)
+         */
+        --
+        Dbamv.Prc_Psih_Insere_Registro_Infec ( :NEW.CD_PRE_MED, :NEW.DT_PRE_MED, :NEW.CD_ATENDIMENTO, :new.cd_prestador );
+      End If;
+      -- PDA 270868 (Fim)
+      --------------------------------------------------------------------------
+      ---- Inclue ocorrencia de Procedimento Invasivo em USUARIO_BANCO.MOV_INV----------
+      USUARIO_BANCO.PRC_PSIH_ATUALIZA_MOV_INV ( :NEW.CD_PRE_MED, :NEW.CD_ATENDIMENTO, :NEW.DT_PRE_MED, :NEW.HR_PRE_MED,
+                                        Null, Null);
+      if v_sn_gerar_solicitacoes = 'S' then
+        -- PDA 320228 (Inicio)
+        usuario_banco.prc_pbsa_gera_solicitacao(  :new.cd_pre_med
+                                        , :new.cd_atendimento
+                                        , :new.dt_pre_med
+                                        , :new.hr_pre_med
+                                        , :new.cd_setor
+                                        , :new.Fl_Impresso
+                                        , :old.Fl_Impresso);
+        -- PDA 320228 (Fim)
+      end if;
+      --------------------------------------------------------------------------
+      /*  PDA 103913
+          Procedimento que exclui os pedidos de exames Laboratoriais e de imagem caso existam itens associados sendo            suspensos*/
+         Dbamv.PRC_PAGU_EXCLUI_PED_EXA (:new.Cd_Pre_Med ,:new.Cd_Atendimento);
+         --Adicionado o parametro tp_pre_med - ggms
+         -- Passando o novo parametro pkg_pagu_itpremed.fnc_retorna_primeira_dieta na prc_pagu_exclui_dieta
+         usuario_banco.prc_pagu_exclui_dieta(:New.cd_pre_med
+                                    ,:New.cd_atendimento
+                                    ,pkg_pagu_itpremed.fnc_retorna_primeira_dieta
+                                    ,:New.tp_pre_med
+                                    ); -->> PDA 133574
+      --- pda 170539 (Inicio) chama procedure que insere registros na apac pendente
+      usuario_banco.prc_insere_apac_pendente(:new.cd_atendimento
+                                ,:new.cd_prestador
+                                ,:new.cd_pre_med
+                                ,:new.dt_pre_med);
+      --- pda 170539 (fim) ---
+      /**********************************************************************************************************
+        PDA: 87035 - 02/03/04 - Keilla Costa
+        DESCRIÇÃO: Esta trigger foi alterada , unindo à funcionalidade já existente o que a trigger da pitpre_med fazia.
+                A de lá foi excluída . Qdo a Prescrição for impressa, será criada equipe médica p/ o procedimento
+      *********************************************************************************************************/
+      Open  cTipoConv;
+      Fetch cTipoConv into vTpConvenio;
+      Close cTipoConv;
+      if vTpConvenio in ('C','P') and v_sn_gerar_solicitacoes = 'S' then
+      -- Gera equipe médica na  itlan_med e na pitpre_med
+       USUARIO_BANCO.GERA_EQUIPE_MEDICA (:new.cd_pre_med,
+                                 :new.cd_atendimento,
+                                 :new.dt_pre_med,
+                                 :new.hr_pre_med,
+                                 :new.cd_unid_int,
+                                 :new.cd_prestador,
+                                 :new.cd_setor ) ;
+      end if;
+      --- pda 87035 fim ---
+    if v_sn_gerar_solicitacoes = 'S' or v_tp_objeto = 'RECEIT' then
+      --  PDA 478851 Inicio
+      /**********************************************************************************************************
+          PDA:478851 - 13/01/12 - Roberta Valéria
+          DESCRIÇÃO: Incluída a geração da solicitação da Guia Tis SPSADT.Esta geração vai ser feita através da chamada do objeto
+          FNC_MVPEP_GERA_SOLICITACAO criado pela equipe de faturamento.
+        ************************************************************************************************************/
+        Declare
+        Cursor CconvenioTiss is
+        select count(*)
+          from usuario_banco.convenio
+               ,usuario_banco.atendime
+               ,usuario_banco.convenio_conf_tiss conf_tiss
+         where convenio.cd_convenio     = atendime.cd_convenio
+           and conf_tiss.cd_convenio    = convenio.cd_convenio
+           and convenio.tp_convenio     = 'C'
+           and atendime.cd_atendimento  = :new.cd_atendimento;
+        ---
+        Cursor Cobjeto is
+        Select tp_objeto
+          From usuario_banco.pagu_objeto
+         Where cd_objeto  = :new.cd_objeto;
+         Cursor CconfigImpressaoTiss is
+         Select count(*)
+           From usuario_banco.config_pagu_impressao
+          Where (tp_imprime_presc_med in ('A','S') and tp_relatorio = 'T')
+                 OR (tp_imprime_exa_lab in ('A','S')  and tp_relatorio = 'T')
+                   OR (tp_imprime_exa_ima in ('A','S')  and tp_relatorio = 'T');
+       vConfigImpresssaoTiss number(2);
+       vRetFunc varchar2(2000);
+       vConvenioTiss number(2);
+       vpvMsg  varchar2(2000);
+       vTpObjeto varchar2(6);
+       --
+        Begin
+            Open  CconvenioTiss;
+            Fetch CconvenioTiss into vConvenioTiss;
+            Close CconvenioTiss;
+            Open  Cobjeto;
+            Fetch Cobjeto into vTpObjeto;
+            Close Cobjeto;
+            Open  CconfigImpressaoTiss;
+            Fetch CconfigImpressaoTiss into vConfigImpresssaoTiss;
+            Close CconfigImpressaoTiss;
+            If nvl(vConvenioTiss,0) > 0  then
+               If nvl(vConfigImpresssaoTiss,0) > 0 then
+                  vRetFunc := USUARIO_BANCO.FNC_MVPEP_GERA_SOLICITACAO(:New.Cd_Pre_Med,null,:New.Cd_Atendimento,:New.Cd_Prestador,vTpObjeto,vpvMsg,null);
+               End if;
+            End if;
+         End;
+        --  PDA 478851 Fim
+      END IF;
+   --
+   -- inicio PDA: 566462 - 16/01/2013
+   -- *** Gera as pendências na lista do Painel, para  a solução de atendimentos de urgência, a principio usado pela UPA ***
+      if v_sn_gerar_solicitacoes = 'S' then
+        Dbamv.Prc_MVPainel_Registra_Penden( :New.Cd_Pre_Med, :New.Cd_Atendimento, :New.Cd_Setor ); -- Pda 552196
+      end if;
+   --  Dbamv.Prc_MVPainel_Registra_Penden( :New.Cd_Pre_Med, :New.Cd_Atendimento, :New.Cd_Setor ); -- Inibido pelo Pda 552196
+                  --
+  ELSIF ((:OLD.FL_IMPRESSO = 'S') AND (:NEW.FL_IMPRESSO = 'N')) THEN
+--      if v_sn_gerar_solicitacoes = 'S' then
+--        Dbamv.Prc_MVPainel_Registra_Penden( :New.Cd_Pre_Med, :New.Cd_Atendimento, :New.Cd_Setor ); -- Pda 552196
+--      end if;
+      FOR C_record IN C_ped_lab LOOP
+         DELETE USUARIO_BANCO.ITPED_LAB
+         WHERE  CD_PED_LAB = C_RECORD.CD_PED_LAB;
+         DELETE USUARIO_BANCO.PED_LAB
+         WHERE  CD_PED_LAB = C_RECORD.CD_PED_LAB;
+      END LOOP;
+      --
+   END IF;
+   --
+   -- término PDA: 566462 - 16/01/2013
+   --
+   -- *** Aqui deve ficar todas as rotinas que devem ser disparadas a partir do momento que a prescrição seja fechada,
+   --   independente se ela já vai estar válida ou não de acordo com os tipos de prescrição:
+   --        "(A) => Presc. de Internado" e "(F) => Presc. Futura"  ***
+  IF :New.FL_IMPRESSO = 'S' AND :Old.FL_IMPRESSO = 'N' THEN
+     --
+      Declare
+        Cursor C_Item_Agendamento Is
+          Select Tip_Presc.Cd_Item_Agendamento
+                ,ItPre_Med.Cd_Itpre_Med
+                ,ItPre_Med.ds_itpre_med
+                ,To_Number(NULL) Cd_Tip_Presc
+                ,Tip_Presc.cd_exa_lab
+                ,Tip_Presc.cd_exa_rx
+            From Dbamv.ItPre_Med
+                , Dbamv.Tip_Presc
+            Where ItPre_Med.Cd_Pre_Med = :New.Cd_Pre_Med
+              And ItPre_Med.Cd_Tip_Presc = Tip_Presc.Cd_Tip_Presc
+              And Tip_Presc.Cd_Item_Agendamento Is Not Null
+          Union All -- PDA 503589 (inicio)
+          Select Tip_Presc.Cd_Item_Agendamento
+                ,ItPre_Med.Cd_Itpre_Med
+                ,ItPre_Med.ds_itpre_med
+                ,CItpre_Med.Cd_Tip_Presc
+                ,Tip_Presc.cd_exa_lab
+                ,Tip_Presc.cd_exa_rx
+            From Dbamv.CItPre_Med
+                , Dbamv.ItPre_Med
+                , Dbamv.Tip_Presc
+            Where ItPre_Med.Cd_Pre_Med    = :New.Cd_Pre_Med
+              And ItPre_Med.Cd_ItPre_Med  = CItPre_Med.Cd_ItPre_Med
+              And CItPre_Med.Cd_Tip_Presc = Tip_Presc.Cd_Tip_Presc
+              And Tip_Presc.Cd_Item_Agendamento Is Not Null; -- PDA 503589 (fim)
+        --
+        rItem_Agendamento C_Item_Agendamento%RowType;
+        --
+        Cursor cObjeto Is
+            Select Tp_Objeto
+              From Dbamv.Pagu_Objeto
+            Where Cd_Objeto = :New.Cd_Objeto;
+        vTp_Objeto Varchar2(30);
+        --
+        CURSOR cSessao IS
+        SELECT Nr_Dia
+          FROM Dbamv.Sessao_Tratamento
+          WHERE Cd_Tratamento = :New.Cd_Tratamento
+            AND Nr_Ciclo      = :New.Nr_Ciclo
+            AND Nr_Sessao     = :New.Nr_Sessao;
+        --
+        nNrDia NUMBER;
+        --
+      Begin
+        --
+        FOR C1 IN  C_Item_Agendamento LOOP
+            --
+            Open  cObjeto;
+            Fetch cObjeto Into vTp_Objeto;
+            Close cObjeto;
+            --
+            -- *************************** --
+            -- *** Rotina do MVPEP 2.0 *** --
+            -- *************************** --
+            IF    :New.Cd_Tratamento IS NOT NULL
+              AND :New.Cd_Pre_Med_Tratmt Is not NULL
+              AND :New.tp_pre_med = 'F'
+              AND :Old.fl_impresso = 'N' AND :New.fl_impresso = 'S' THEN
+              --
+                  --
+                  OPEN  cSessao;
+                  FETCH cSessao INTO nNrDia;
+                  CLOSE cSessao;
+                  --
+                    Dbamv.Pkg_Pagu_Agendamento.Prc_Insere_Solic_Agendamento( C1.Cd_Item_Agendamento
+                                                                , :New.Dt_Referencia
+                                                                , :New.Cd_Atendimento
+                                                                , C1.Cd_ItPre_Med
+                                                                , :New.Cd_Tratamento
+                                                                , :New.Nr_Ciclo
+                                                                , nNrDia
+                                                                , :New.Nr_Sessao
+                                                                , 'N' -->> O faturamento só funciona atualmente por sessão
+                                                                , C1.Cd_Tip_Presc -- PDA 503589
+                                                                , C1.ds_itpre_med );
+              --
+            ELSE
+              --
+              -- ***************************************************** --
+              -- *** Rotina do PAGU, para prescricao de tratamento *** --
+              -- ***************************************************** --
+              If ( (vTp_Objeto = 'TRATMT' And :New.Cd_Pre_Med_Tratmt Is Null )
+                  OR
+                   (vTp_Objeto = 'MEDICA'
+                     AND C1.CD_EXA_LAB IS NULL
+                     AND C1.CD_EXA_RX IS NULL
+                     And :New.Tp_Pre_Med In ('M', 'F') ) --São rafael devido ao pagu tela de checagem não interpretar o tipo TRATMT colocamos essa condição para o objeto MEDICA
+                   ) Then -- PDA 518186 -- PDA 503589
+                --
+                Dbamv.Pkg_Pagu_Tratamento.Prc_Valida_Dias_Prescricao(:New.Cd_Pre_Med);
+                Dbamv.pkg_pagu_tratamento.acumula_variaveis(:new.cd_atendimento, :new.cd_prestador, :new.cd_setor);
+                Dbamv.pkg_pagu_tratamento.cria_tratamento(:new.cd_pre_med,:new.cd_atendimento); --PDA 202158
+                --
+              -- ***************************************************** --
+              -- *** Para prescrição que não seja de tratamento    *** --
+              -- ***************************************************** --
+              Elsif vTp_Objeto = 'RECEIT' or :new.tp_pre_med = 'F' Then
+                --
+                  Dbamv.Pkg_Pagu_Agendamento.Prc_Insere_Solic_Agendamento( C1.Cd_Item_Agendamento
+                                                                , :New.Dt_Referencia
+                                                                , :New.Cd_Atendimento
+                                                                , C1.Cd_ItPre_Med
+                                                                , NULL  --Cd_Tratamento
+                                                                , NULL  --Nr_Ciclo
+                                                                , 1     --NrDia
+                                                                , NULL  --Nr_Sessao
+                                                                , 'N' -->> O faturamento só funciona atualmente por sessão
+                                                                , C1.Cd_Tip_Presc -- PDA 503589
+                                                                , C1.ds_itpre_med  );
+                  --
+                --
+              End If;
+           END IF;
+        END LOOP;
+      End;
+      --
+      -- Pda 518073 Inicio
+      Dbamv.Pkg_Pagu_Tratamento.Prc_Popula_Dia_Tratamento (:New.Cd_Pre_Med);
+      -- Pda 518073 Fim
+  END IF;
+END;
+END TRG_U_PRE_MED;
+
+
+TRG_PRE_MED_CHECA_ALTER_PREST
+DECLARE
+  
+	Cursor cursorCodigoSequencial is SELECT Dbamv.SEQ_PW_LOG_PRE_MED.NextVal FROM dual;  
+	codigoSequencial  number;
+ 
+BEGIN
+    
+     open  cursorCodigoSequencial;
+     fetch cursorCodigoSequencial into codigoSequencial;
+     close cursorCodigoSequencial;
+    
+    IF :OLD.CD_PRESTADOR != :NEW.CD_PRESTADOR THEN
+		
+		 INSERT INTO USUARIO_BANCO.PW_LOG_PRE_MED(
+			
+			CD_PW_LOG_PRE_MED,
+			CD_PRE_MED,			
+			CD_PRESTADOR_ANTERIOR,
+			CD_USUARIO_ANTERIOR,
+			DH_CRIACAO_ANTERIOR,
+			CD_PRESTADOR,
+			CD_USUARIO,
+			DH_CRIACAO
+	  )
+		VALUES (
+			codigoSequencial,
+			:OLD.CD_PRE_MED,
+			:OLD.CD_PRESTADOR,
+			:OLD.NM_USUARIO,
+			:OLD.DH_CRIACAO,
+			:NEW.CD_PRESTADOR,
+			:NEW.NM_USUARIO,
+			:NEW.DH_CRIACAO
+			);
+    END IF;
+	
+END;
+
+
+
+TRG_PRE_MED_ALTERA_PROT_TRATMT
+Declare
+   Cursor cObjeto Is
+      Select Tp_Objeto
+        From Dbamv.Pagu_Objeto
+       Where Cd_Objeto = :New.Cd_Objeto;
+   vTp_Objeto  Dbamv.Pagu_Objeto.Tp_Objeto%Type;
+   --
+   Cursor cPadrao Is
+     Select 1
+       From (select nvl(cd_itpre_pad,0) cd_itpre_pad
+               from usuario_banco.itpre_med
+              where cd_pre_med = :new.cd_pre_med
+             minus
+             select cd_itpre_pad
+               from usuario_banco.itpre_pad
+              where cd_pre_pad = :new.cd_pre_pad
+                and sn_ativo   = 'S'
+             union all
+             select cd_itpre_pad
+               from usuario_banco.itpre_pad
+              where cd_pre_pad  = :new.cd_pre_pad
+                and sn_ativo    = 'S'
+             minus
+             select cd_itpre_pad cd_itpre_pad
+               from usuario_banco.itpre_med
+              where cd_pre_med = :new.cd_pre_med
+                and cd_itpre_pad is not null);
+   vExiste    Number(1);
+   vformula   Number; -- PDA 517136
+   --
+   Cursor cQuant Is
+      select it.cd_itpre_pad,
+             it.qt_itpre_med,
+             it.qt_infusao,
+             it.cd_uni_pro_inf
+        from usuario_banco.itpre_med it,
+             usuario_banco.tip_presc tip,
+             usuario_banco.tip_esq   esq
+       where it.cd_tip_presc = tip.cd_tip_presc
+         and tip.cd_tip_esq  = esq.cd_tip_esq
+         and it.cd_pre_med   = :new.cd_pre_med
+         and it.cd_itpre_pad is not null
+      minus
+      select it.cd_itpre_pad,
+             qt_itpre_pad,
+             it.qt_infusao,
+             it.cd_uni_pro_inf
+        from usuario_banco.itpre_pad it,
+             usuario_banco.tip_presc tip,
+             usuario_banco.tip_esq   esq
+       where it.cd_tip_presc = tip.cd_tip_presc
+         and tip.cd_tip_esq  = esq.cd_tip_esq
+         and it.sn_ativo     = 'S'
+         and it.cd_pre_pad   = :new.cd_pre_pad;
+   --
+   rQuant    cQuant%RowTYpe;
+   --
+   Cursor cPre_Pad (pCd_ItPre_Pad In Number) Is
+      Select qt_itpre_pad,
+             it.qt_infusao,
+             it.cd_uni_pro_inf
+        From usuario_banco.itpre_pad it,
+             usuario_banco.tip_presc tip,
+             usuario_banco.tip_esq   esq
+       Where it.cd_tip_presc = tip.cd_tip_presc
+         And tip.cd_tip_esq  = esq.cd_tip_esq
+         And it.cd_itpre_pad = pCd_ItPre_Pad;
+   --
+   vPre_Pad   cPre_Pad%RowType;
+ Begin
+     If :Old.Fl_Impresso = 'N' And :New.Fl_Impresso = 'S' And :New.Cd_Pre_Med_Tratmt Is Null Then
+        Open  cObjeto;
+        Fetch cObjeto Into vTp_Objeto;
+        Close cObjeto;
+        --
+        If vTp_Objeto = 'TRATMT' Then
+           Open  cPadrao;
+           Fetch cPadrao into vExiste;
+              If ( cPadrao%Found ) Then
+                 :New.Sn_Altera_Protocolo_Tratamento := 'S';
+              End If;
+           Close cPadrao;
+           --
+           If Nvl(vExiste,0) != 1 Then
+              For c in cQuant
+              Loop
+                  Open  cPre_Pad(c.cd_itpre_pad);
+                  Fetch cPre_Pad Into vPre_Pad;
+                  Close cPre_Pad;
+                  --
+                  If Nvl(c.qt_infusao,0)       != Nvl(vPre_Pad.qt_infusao,0) Or
+                     Nvl(c.cd_uni_pro_inf,0) != Nvl(vPre_Pad.cd_uni_pro_inf,0) Then
+                     :New.Sn_Altera_Protocolo_Tratamento := 'S';
+                  Else
+                     If c.qt_itpre_med != Nvl(Dbamv.Pkg_Avaliacao.Fnc_Formula_ItPre_Pad(c.cd_itpre_pad, :New.Cd_Atendimento, vformula ), vPre_Pad.Qt_ItPre_Pad) Then -- PDA 517136
+                        :New.Sn_Altera_Protocolo_Tratamento := 'S';
+                     End If;
+                  End If;
+              End Loop;
+           End If;
+        End If;
+     End If;
+End;
+
+
+
+TRG_PRE_MED_GERA_LOG_CONS_FIM
+DECLARE 
+	AUX_CD_TRIAGEM_ATENDIMENTO     USUARIO_BANCO.TRIAGEM_ATENDIMENTO.CD_TRIAGEM_ATENDIMENTO%TYPE := NULL; 
+	VINICIO USUARIO_BANCO.SACR_TEMPO_PROCESSO.CD_TIPO_TEMPO_PROCESSO%TYPE := NULL; 
+    VFINAL  USUARIO_BANCO.SACR_TEMPO_PROCESSO.CD_TIPO_TEMPO_PROCESSO%TYPE := NULL; 
+-- VERIFICA A EXISTÊNCIA DE REGISTROS REFERENTES AO INÍCIO DE UMA CONSULTA 
+	CURSOR CINICIO IS 
+	SELECT CD_TIPO_TEMPO_PROCESSO 
+	FROM SACR_TEMPO_PROCESSO 
+	WHERE CD_ATENDIMENTO     = :NEW.CD_ATENDIMENTO 
+	AND CD_TIPO_TEMPO_PROCESSO = 31; 
+-- VERIFICA A EXISTÊNCIA DE REGISTROS REFERENTES AO FIM DE UMA CONSULTA 
+	CURSOR CFINAL IS 
+	SELECT CD_TIPO_TEMPO_PROCESSO 
+	FROM SACR_TEMPO_PROCESSO 
+	WHERE CD_ATENDIMENTO     = :NEW.CD_ATENDIMENTO 
+	AND CD_TIPO_TEMPO_PROCESSO = 32; 
+-- RETORNA O TIPO DE ATENDIMENTO, O NOME DO USUÁRIO E O CÓDIGO DE MULTI EMPRESA 
+	CURSOR cATENDIME IS 
+	SELECT TP_ATENDIMENTO, NM_USUARIO, CD_MULTI_EMPRESA 
+	FROM USUARIO_BANCO.ATENDIME 
+	WHERE CD_ATENDIMENTO IS NOT NULL 
+	AND CD_ATENDIMENTO      = :NEW.CD_ATENDIMENTO; 
+--            RETORNA O CÓDIGO DA TRIAGEM REFERENTE AO ATENDIMENTO 
+	CURSOR cCOD_TRIAGEM IS 
+	SELECT CD_TRIAGEM_ATENDIMENTO 
+	FROM USUARIO_BANCO.TRIAGEM_ATENDIMENTO
+	WHERE DH_PRE_ATENDIMENTO IN (SELECT MAX(DH_PRE_ATENDIMENTO) 
+	FROM USUARIO_BANCO.TRIAGEM_ATENDIMENTO 
+	WHERE CD_ATENDIMENTO = :NEW.CD_ATENDIMENTO) 
+	AND CD_ATENDIMENTO = :NEW.CD_ATENDIMENTO; 
+	vATENDIME cATENDIME%ROWTYPE; 
+	AUX_TP_ATENDIMENTO          vATENDIME.TP_ATENDIMENTO%TYPE; 
+	AUX_NM_USUARIO              vATENDIME.NM_USUARIO%TYPE; 
+	AUX_CD_MULTI_EMPRESA        vATENDIME.CD_MULTI_EMPRESA%TYPE; 
+BEGIN 
+-- Gravado o processo de finalização do atendimento apenas quando finalizar a prescrição 
+IF :old.fl_impresso = 'N' and :new.fl_impresso = 'S' THEN 
+	OPEN  cINICIO; 
+    FETCH cINICIO INTO VINICIO; 
+    CLOSE cINICIO; 
+    OPEN  CFINAL; 
+    FETCH CFINAL INTO VFINAL; 
+    CLOSE CFINAL; 
+--            OS CURSORES DETERMINAM SE EXISTE INÍCIO OU FIM DE UMA CONSULTA. 
+    OPEN  cATENDIME; 
+    FETCH cATENDIME INTO vATENDIME; 
+    CLOSE cATENDIME; 
+	AUX_TP_ATENDIMENTO         := vATENDIME.TP_ATENDIMENTO; 
+	AUX_NM_USUARIO             := vATENDIME.NM_USUARIO; 
+	AUX_CD_MULTI_EMPRESA       := vATENDIME.CD_MULTI_EMPRESA; 
+--            VERIFICA SE O ATENDIMENTO REALIZADO É URGÊNCIA, E NESTE CASO, ALIMENTA A VARIÁVEL QUE INDICA 
+--            O CÓDIGO DA TRIAGEM. 
+	IF(AUX_TP_ATENDIMENTO  IN ('U','A')) THEN
+		
+		OPEN  cCOD_TRIAGEM;
+		FETCH cCOD_TRIAGEM INTO AUX_CD_TRIAGEM_ATENDIMENTO;
+		CLOSE cCOD_TRIAGEM;
+		
+--      VERIFICA SE A CONSULTA JA FOI INICIADA,
+--      E NESTE CASO, CHAMA A PROCEDURE QUE IRÁ GRAVAR OS DADOS RELATIVOS AO FIM DA CONSULTA.
+		
+		IF (VINICIO IS NOT NULL) THEN
+         --Se o atendimento já estiver sido iniciado, será incluido o tipo 32
+			PRC_SACR_CHAMADA_PAINEL_MV(:NEW.CD_ATENDIMENTO, AUX_CD_TRIAGEM_ATENDIMENTO, AUX_CD_MULTI_EMPRESA, NULL, 32, AUX_NM_USUARIO, sysdate, 'N');
+		ELSE
+         --Se o atendimento não estiver sido iniciado, esta prescrição iniciará o atendimento
+			PRC_SACR_CHAMADA_PAINEL_MV(:NEW.CD_ATENDIMENTO, AUX_CD_TRIAGEM_ATENDIMENTO, AUX_CD_MULTI_EMPRESA, NULL, 31, AUX_NM_USUARIO, sysdate, 'N');
+		END IF;
+		
+    END IF;
+END IF; 
+	EXCEPTION 
+		WHEN OTHERS THEN 
+			--MULTI-IDIOMA: Utilização do pkg_rmi_traducao.extrair_msg para mensagens (MSG_1)
+			RAISE_APPLICATION_ERROR(-20003,pkg_rmi_traducao.extrair_proc_msg('MSG_1', 'TRG_PRE_MED_GERA_LOG_CONS_FIM', 'ERRO AO EXECUTAR A TRIGGER USUARIO_BANCO.TRG_PRE_MED_GERA_LOG_CONS_FIM: %s - %s', arg_list(SQLCODE, SQLERRM))); 
+END; 
+
+
+
+TRG_LOG_PRE_MED_TRATAMENTO
+Declare
+ Cursor cObjeto
+     Is Select Pagu_Objeto.Tp_Objeto
+          From Dbamv.Pagu_Objeto
+         Where Pagu_Objeto.Cd_Objeto = :Old.Cd_Objeto;
+ Cursor cPrestador(cdUsuario In Varchar2) Is 
+    Select Cd_Prestador
+    From Dbasgu.Usuarios
+    Where cd_Usuario = cdUsuario;
+ nCdUsuario Varchar2(30) := Dbamv.Pkg_Mv_Variaveis.Fnc_Get_Usuario();
+ nCdPrestador Dbamv.Prestador.Cd_Prestador%Type;
+ rObjeto      cObjeto%RowType;
+ vTp_Operacao  Varchar2(3); -- OP 26413
+Begin
+     Open  cObjeto;
+     Fetch cObjeto Into rObjeto;
+     Close cObjeto;
+     --
+     If Deleting Then -- OP 26413 (inicio)
+        vTp_Operacao := 'Exc';
+     Elsif Updating Then
+        vTp_Operacao := 'Alt';
+     End If; -- OP 26413 (fim)
+     --
+     If  rObjeto.Tp_Objeto = 'TRATMT' Then
+	 
+		 Open  cPrestador(nCdUsuario);
+		 Fetch cPrestador Into nCdPrestador;
+		 Close cPrestador;
+		 
+		 Insert into Dbamv.Log_Pre_Med_Tratamento
+			   (Cd_Log_Pre_Med_Tratamento
+			  , Cd_Pre_Med_Tratmt
+			  , Dh_Operacao
+			  , Tp_Operacao
+			  , Cd_Prestador_Operacao
+			  , Cd_Usuario
+			  , Cd_Pre_Med
+			  , Cd_Atendimento
+			  , Cd_Prestador
+			  , Cd_Unid_Int
+			  , Dt_Pre_Med
+			  , Hr_Pre_Med
+			  , Cd_Id_Usuario
+			  , Cd_Solsai_Pro
+			  , Sn_Fechado
+			  , Sn_Rn
+			  , Dt_Validade
+			  , Fl_Principal
+			  , Fl_Impresso
+			  , Cd_Setor
+			  , Tp_Pre_Med
+			  , Nm_Usuario
+			  , Dt_Referencia
+			  , Sn_Transcricao
+			  , Dh_Criacao
+			  , Dh_Impressao
+			  , Cd_Importa_Reg_Fat
+			  , Cd_Importa_Reg_Amb
+			  , Cd_Pre_Pad
+			  , Cd_Objeto
+			  , Nm_Usuario_Autorizador
+			  , Cd_Registro_Clinico)
+		Values (Dbamv.Seq_Log_Pre_Med_Tratamento.NextVal
+			  , Nvl(:New.Cd_Pre_Med_Tratmt, :Old.Cd_Pre_Med_Tratmt)
+			  , Sysdate
+			  , vTp_Operacao -- OP 26413
+			  , nCdPrestador
+			  , Dbamv.Pkg_Mv_Variaveis.Fnc_Get_Usuario
+			  , Nvl(:New.Cd_Pre_Med, :Old.Cd_Pre_Med)
+			  , Nvl(:New.Cd_Atendimento, :Old.Cd_Atendimento)
+			  , Nvl(:New.Cd_Prestador, :Old.Cd_Prestador)
+			  , Nvl(:New.Cd_Unid_Int, :Old.Cd_Unid_Int)
+			  , Nvl(:New.Dt_Pre_Med, :Old.Dt_Pre_Med)
+			  , Nvl(:New.Hr_Pre_Med, :Old.Hr_Pre_Med)
+			  , Nvl(:New.Cd_Id_Usuario, :Old.Cd_Id_Usuario)
+			  , Nvl(:New.Cd_Solsai_Pro, :Old.Cd_Solsai_Pro)
+			  , Nvl(:New.Sn_Fechado, :Old.Sn_Fechado)
+			  , Nvl(:New.Sn_Rn, :Old.Sn_Rn)
+			  , Nvl(:New.Dt_Validade, :Old.Dt_Validade)
+			  , Nvl(:New.Fl_Principal, :Old.Fl_Principal)
+			  , Nvl(:New.Fl_Impresso, :Old.Fl_Impresso)
+			  , Nvl(:New.Cd_Setor, :Old.Cd_Setor)
+			  , Nvl(:New.Tp_Pre_Med, :Old.Tp_Pre_Med)
+			  , Nvl(:New.Nm_Usuario, :Old.Nm_Usuario)
+			  , Nvl(:New.Dt_Referencia, :Old.Dt_Referencia)
+			  , Nvl(:New.Sn_Transcricao, :Old.Sn_Transcricao)
+			  , Nvl(:New.Dh_Criacao, :Old.Dh_Criacao)
+			  , Nvl(:New.Dh_Impressao, :Old.Dh_Impressao)
+			  , Nvl(:New.Cd_Importa_Reg_Fat, :Old.Cd_Importa_Reg_Fat)
+			  , Nvl(:New.Cd_Importa_Reg_Amb, :Old.Cd_Importa_Reg_Amb)
+			  , Nvl(:New.Cd_Pre_Pad, :Old.Cd_Pre_Pad)
+			  , Nvl(:New.Cd_Objeto, :Old.Cd_Objeto)
+			  , Nvl(:New.Nm_Usuario_Autorizador, :Old.Nm_Usuario_Autorizador)
+			  , Nvl(:New.Cd_Registro_Clinico, :Old.Cd_Registro_Clinico));
+	 End If;
+Exception
+ When Others Then
+      Null;
+End;
+
+
+TRG_A_PRE_MED
+Declare  /* Criada por Edson(MV Informática) 16/12/2022 12:32 */
+      vcd_audit_tabela  number(10) := 0; 
+ Begin  
+    /* Auditoria das Tabelas */
+    If    Inserting Then 
+          usuario_banco.pk_sgu.audita_tabela('PRE_MED','I',vcd_audit_tabela); 
+    End If; 
+    If Updating then 
+          usuario_banco.pk_sgu.audita_tabela('PRE_MED','U',vcd_audit_tabela); 
+    End If; 
+    If Deleting then 
+          usuario_banco.pk_sgu.audita_tabela('PRE_MED','D',vcd_audit_tabela); 
+    End If; 
+    /* Auditoria das Colunas */
+    If    Inserting Then 
+          null; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DT_REFERENCIA',vcd_audit_tabela,null,to_char(:new.DT_REFERENCIA,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_TRANSCRICAO',vcd_audit_tabela,null,:new.SN_TRANSCRICAO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DH_CRIACAO',vcd_audit_tabela,null,to_char(:new.DH_CRIACAO,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DH_IMPRESSAO',vcd_audit_tabela,null,to_char(:new.DH_IMPRESSAO,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_MED',vcd_audit_tabela,null,to_char(:new.CD_PRE_MED),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_ATENDIMENTO',vcd_audit_tabela,null,to_char(:new.CD_ATENDIMENTO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRESTADOR',vcd_audit_tabela,null,to_char(:new.CD_PRESTADOR),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_UNID_INT',vcd_audit_tabela,null,to_char(:new.CD_UNID_INT),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DT_PRE_MED',vcd_audit_tabela,null,to_char(:new.DT_PRE_MED,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','HR_PRE_MED',vcd_audit_tabela,null,to_char(:new.HR_PRE_MED,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_ID_USUARIO',vcd_audit_tabela,null,to_char(:new.CD_ID_USUARIO),to_char(:new.CD_PRE_MED) ); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_SOLSAI_PRO',vcd_audit_tabela,null,to_char(:new.CD_SOLSAI_PRO),to_char(:new.CD_PRE_MED) ); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_FECHADO',vcd_audit_tabela,null,:new.SN_FECHADO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_RN',vcd_audit_tabela,null,:new.SN_RN,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DT_VALIDADE',vcd_audit_tabela,null,to_char(:new.DT_VALIDADE,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','FL_PRINCIPAL',vcd_audit_tabela,null,:new.FL_PRINCIPAL,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','FL_IMPRESSO',vcd_audit_tabela,null,:new.FL_IMPRESSO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','TP_PRE_MED',vcd_audit_tabela,null,:new.TP_PRE_MED,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NM_USUARIO',vcd_audit_tabela,null,:new.NM_USUARIO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_SETOR',vcd_audit_tabela,null,to_char(:new.CD_SETOR),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_ALTERA_PROTOCOLO_TRATAMENTO',vcd_audit_tabela,null,:new.SN_ALTERA_PROTOCOLO_TRATAMENTO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_PRESCRICAO_DIA_SEGUINTE',vcd_audit_tabela,null,:new.SN_PRESCRICAO_DIA_SEGUINTE,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_OBJETO',vcd_audit_tabela,null,to_char(:new.CD_OBJETO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NM_USUARIO_AUTORIZADOR',vcd_audit_tabela,null,:new.NM_USUARIO_AUTORIZADOR,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_REGISTRO_CLINICO',vcd_audit_tabela,null,to_char(:new.CD_REGISTRO_CLINICO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_MED_TRATMT',vcd_audit_tabela,null,to_char(:new.CD_PRE_MED_TRATMT),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_USUARIO_CONVERSAO_PRESCRIC',vcd_audit_tabela,null,:new.CD_USUARIO_CONVERSAO_PRESCRIC,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DH_CONVERSAO_PRESCRICAO',vcd_audit_tabela,null,to_char(:new.DH_CONVERSAO_PRESCRICAO,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_DOCUMENTO_CLINICO',vcd_audit_tabela,null,to_char(:new.CD_DOCUMENTO_CLINICO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NM_PRESCRICAO',vcd_audit_tabela,null,:new.NM_PRESCRICAO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_TRATAMENTO',vcd_audit_tabela,null,to_char(:new.CD_TRATAMENTO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NR_CICLO',vcd_audit_tabela,null,to_char(:new.NR_CICLO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NR_SESSAO',vcd_audit_tabela,null,to_char(:new.NR_SESSAO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_MED_INTEGRA',vcd_audit_tabela,null,:new.CD_PRE_MED_INTEGRA,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRESTADOR_LIBERA_EXAME',vcd_audit_tabela,null,to_char(:new.CD_PRESTADOR_LIBERA_EXAME),to_char(:new.CD_PRE_MED) ); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_IMPORTA_REG_FAT',vcd_audit_tabela,null,to_char(:new.CD_IMPORTA_REG_FAT),to_char(:new.CD_PRE_MED) ); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_IMPORTA_REG_AMB',vcd_audit_tabela,null,to_char(:new.CD_IMPORTA_REG_AMB),to_char(:new.CD_PRE_MED) ); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_PAD',vcd_audit_tabela,null,to_char(:new.CD_PRE_PAD),to_char(:new.CD_PRE_MED),'S'); 
+    end if; 
+    If    Deleting  Then 
+          null; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DT_REFERENCIA',vcd_audit_tabela,to_char(:old.DT_REFERENCIA,'DD/MM/YYYY'),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_TRANSCRICAO',vcd_audit_tabela,:old.SN_TRANSCRICAO,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DH_CRIACAO',vcd_audit_tabela,to_char(:old.DH_CRIACAO,'DD/MM/YYYY'),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DH_IMPRESSAO',vcd_audit_tabela,to_char(:old.DH_IMPRESSAO,'DD/MM/YYYY'),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_MED',vcd_audit_tabela,to_char(:old.CD_PRE_MED),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_ATENDIMENTO),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRESTADOR',vcd_audit_tabela,to_char(:old.CD_PRESTADOR),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_UNID_INT',vcd_audit_tabela,to_char(:old.CD_UNID_INT),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DT_PRE_MED',vcd_audit_tabela,to_char(:old.DT_PRE_MED,'DD/MM/YYYY'),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','HR_PRE_MED',vcd_audit_tabela,to_char(:old.HR_PRE_MED,'DD/MM/YYYY'),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_ID_USUARIO',vcd_audit_tabela,to_char(:old.CD_ID_USUARIO),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_SOLSAI_PRO',vcd_audit_tabela,to_char(:old.CD_SOLSAI_PRO),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_FECHADO',vcd_audit_tabela,:old.SN_FECHADO,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_RN',vcd_audit_tabela,:old.SN_RN,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DT_VALIDADE',vcd_audit_tabela,to_char(:old.DT_VALIDADE,'DD/MM/YYYY'),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','FL_PRINCIPAL',vcd_audit_tabela,:old.FL_PRINCIPAL,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','FL_IMPRESSO',vcd_audit_tabela,:old.FL_IMPRESSO,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','TP_PRE_MED',vcd_audit_tabela,:old.TP_PRE_MED,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NM_USUARIO',vcd_audit_tabela,:old.NM_USUARIO,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_SETOR',vcd_audit_tabela,to_char(:old.CD_SETOR),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_ALTERA_PROTOCOLO_TRATAMENTO',vcd_audit_tabela,:old.SN_ALTERA_PROTOCOLO_TRATAMENTO,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_PRESCRICAO_DIA_SEGUINTE',vcd_audit_tabela,:old.SN_PRESCRICAO_DIA_SEGUINTE,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_OBJETO',vcd_audit_tabela,to_char(:old.CD_OBJETO),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NM_USUARIO_AUTORIZADOR',vcd_audit_tabela,:old.NM_USUARIO_AUTORIZADOR,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_REGISTRO_CLINICO',vcd_audit_tabela,to_char(:old.CD_REGISTRO_CLINICO),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_MED_TRATMT',vcd_audit_tabela,to_char(:old.CD_PRE_MED_TRATMT),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_USUARIO_CONVERSAO_PRESCRIC',vcd_audit_tabela,:old.CD_USUARIO_CONVERSAO_PRESCRIC,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DH_CONVERSAO_PRESCRICAO',vcd_audit_tabela,to_char(:old.DH_CONVERSAO_PRESCRICAO,'DD/MM/YYYY'),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_DOCUMENTO_CLINICO',vcd_audit_tabela,to_char(:old.CD_DOCUMENTO_CLINICO),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NM_PRESCRICAO',vcd_audit_tabela,:old.NM_PRESCRICAO,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_TRATAMENTO',vcd_audit_tabela,to_char(:old.CD_TRATAMENTO),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NR_CICLO',vcd_audit_tabela,to_char(:old.NR_CICLO),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NR_SESSAO',vcd_audit_tabela,to_char(:old.NR_SESSAO),null,to_char(:old.CD_PRE_MED),'S');
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_MED_INTEGRA',vcd_audit_tabela,:old.CD_PRE_MED_INTEGRA,null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRESTADOR_LIBERA_EXAME',vcd_audit_tabela,to_char(:old.CD_PRESTADOR_LIBERA_EXAME),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_IMPORTA_REG_FAT',vcd_audit_tabela,to_char(:old.CD_IMPORTA_REG_FAT),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_IMPORTA_REG_AMB',vcd_audit_tabela,to_char(:old.CD_IMPORTA_REG_AMB),null,to_char(:old.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_PAD',vcd_audit_tabela,to_char(:old.CD_PRE_PAD),null,to_char(:old.CD_PRE_MED),'S');
+    end if; 
+    If    Updating  Then 
+          null; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DT_REFERENCIA',vcd_audit_tabela,to_char(:old.DT_REFERENCIA,'DD/MM/YYYY'),to_char(:new.DT_REFERENCIA,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_TRANSCRICAO',vcd_audit_tabela,:old.SN_TRANSCRICAO,:new.SN_TRANSCRICAO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DH_CRIACAO',vcd_audit_tabela,to_char(:old.DH_CRIACAO,'DD/MM/YYYY'),to_char(:new.DH_CRIACAO,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DH_IMPRESSAO',vcd_audit_tabela,to_char(:old.DH_IMPRESSAO,'DD/MM/YYYY'),to_char(:new.DH_IMPRESSAO,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_MED',vcd_audit_tabela,to_char(:old.CD_PRE_MED),to_char(:new.CD_PRE_MED),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_ATENDIMENTO),to_char(:new.CD_ATENDIMENTO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRESTADOR',vcd_audit_tabela,to_char(:old.CD_PRESTADOR),to_char(:new.CD_PRESTADOR),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_UNID_INT',vcd_audit_tabela,to_char(:old.CD_UNID_INT),to_char(:new.CD_UNID_INT),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DT_PRE_MED',vcd_audit_tabela,to_char(:old.DT_PRE_MED,'DD/MM/YYYY'),to_char(:new.DT_PRE_MED,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','HR_PRE_MED',vcd_audit_tabela,to_char(:old.HR_PRE_MED,'DD/MM/YYYY'),to_char(:new.HR_PRE_MED,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_ID_USUARIO',vcd_audit_tabela,to_char(:old.CD_ID_USUARIO),to_char(:new.CD_ID_USUARIO),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_SOLSAI_PRO',vcd_audit_tabela,to_char(:old.CD_SOLSAI_PRO),to_char(:new.CD_SOLSAI_PRO),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_FECHADO',vcd_audit_tabela,:old.SN_FECHADO,:new.SN_FECHADO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_RN',vcd_audit_tabela,:old.SN_RN,:new.SN_RN,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DT_VALIDADE',vcd_audit_tabela,to_char(:old.DT_VALIDADE,'DD/MM/YYYY'),to_char(:new.DT_VALIDADE,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','FL_PRINCIPAL',vcd_audit_tabela,:old.FL_PRINCIPAL,:new.FL_PRINCIPAL,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','FL_IMPRESSO',vcd_audit_tabela,:old.FL_IMPRESSO,:new.FL_IMPRESSO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','TP_PRE_MED',vcd_audit_tabela,:old.TP_PRE_MED,:new.TP_PRE_MED,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NM_USUARIO',vcd_audit_tabela,:old.NM_USUARIO,:new.NM_USUARIO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_SETOR',vcd_audit_tabela,to_char(:old.CD_SETOR),to_char(:new.CD_SETOR),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_ALTERA_PROTOCOLO_TRATAMENTO',vcd_audit_tabela,:old.SN_ALTERA_PROTOCOLO_TRATAMENTO,:new.SN_ALTERA_PROTOCOLO_TRATAMENTO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','SN_PRESCRICAO_DIA_SEGUINTE',vcd_audit_tabela,:old.SN_PRESCRICAO_DIA_SEGUINTE,:new.SN_PRESCRICAO_DIA_SEGUINTE,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_OBJETO',vcd_audit_tabela,to_char(:old.CD_OBJETO),to_char(:new.CD_OBJETO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NM_USUARIO_AUTORIZADOR',vcd_audit_tabela,:old.NM_USUARIO_AUTORIZADOR,:new.NM_USUARIO_AUTORIZADOR,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_REGISTRO_CLINICO',vcd_audit_tabela,to_char(:old.CD_REGISTRO_CLINICO),to_char(:new.CD_REGISTRO_CLINICO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_MED_TRATMT',vcd_audit_tabela,to_char(:old.CD_PRE_MED_TRATMT),to_char(:new.CD_PRE_MED_TRATMT),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_USUARIO_CONVERSAO_PRESCRIC',vcd_audit_tabela,:old.CD_USUARIO_CONVERSAO_PRESCRIC,:new.CD_USUARIO_CONVERSAO_PRESCRIC,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','DH_CONVERSAO_PRESCRICAO',vcd_audit_tabela,to_char(:old.DH_CONVERSAO_PRESCRICAO,'DD/MM/YYYY'),to_char(:new.DH_CONVERSAO_PRESCRICAO,'DD/MM/YYYY'),to_char(:new.CD_PRE_MED));
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_DOCUMENTO_CLINICO',vcd_audit_tabela,to_char(:old.CD_DOCUMENTO_CLINICO),to_char(:new.CD_DOCUMENTO_CLINICO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NM_PRESCRICAO',vcd_audit_tabela,:old.NM_PRESCRICAO,:new.NM_PRESCRICAO,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_TRATAMENTO',vcd_audit_tabela,to_char(:old.CD_TRATAMENTO),to_char(:new.CD_TRATAMENTO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NR_CICLO',vcd_audit_tabela,to_char(:old.NR_CICLO),to_char(:new.NR_CICLO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','NR_SESSAO',vcd_audit_tabela,to_char(:old.NR_SESSAO),to_char(:new.NR_SESSAO),to_char(:new.CD_PRE_MED),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_MED_INTEGRA',vcd_audit_tabela,:old.CD_PRE_MED_INTEGRA,:new.CD_PRE_MED_INTEGRA,to_char(:new.CD_PRE_MED)) ; 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRESTADOR_LIBERA_EXAME',vcd_audit_tabela,to_char(:old.CD_PRESTADOR_LIBERA_EXAME),to_char(:new.CD_PRESTADOR_LIBERA_EXAME),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_IMPORTA_REG_FAT',vcd_audit_tabela,to_char(:old.CD_IMPORTA_REG_FAT),to_char(:new.CD_IMPORTA_REG_FAT),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_IMPORTA_REG_AMB',vcd_audit_tabela,to_char(:old.CD_IMPORTA_REG_AMB),to_char(:new.CD_IMPORTA_REG_AMB),to_char(:new.CD_PRE_MED)); 
+          usuario_banco.pk_sgu.audita_coluna('PRE_MED','CD_PRE_PAD',vcd_audit_tabela,to_char(:old.CD_PRE_PAD),to_char(:new.CD_PRE_PAD),to_char(:new.CD_PRE_MED),'S'); 
+    end if; 
+ END TRG_A_PRE_MED;
+
+
+TRG_U_PRE_MED_SN_PREPARACAO
+DECLARE
+   --PRAGMA AUTONOMOUS_TRANSACTION;
+BEGIN
+   IF :NEW.FL_IMPRESSO = 'S' THEN
+
+      --usuario_banco.PRC_GRAVA_LOG_ERRO('AGG', 'TRG_U_PRE_MED_SN_PREPARACAO', 'PREPARA_MED_1', 'PRE_MED: '||:new.cd_pre_med, 99991);
+
+      UPDATE usuario_banco.Itpre_Med itpreMed
+        SET itpreMed.sn_Preparacao = 'S'
+      WHERE itpreMed.cd_pre_Med = :New.Cd_Pre_Med
+        AND usuario_banco.fnc_mvpep_item_preparacao (itpreMed.cd_itPre_Med ) = 'S';
+
+      --usuario_banco.PRC_GRAVA_LOG_ERRO('AGG', 'TRG_U_PRE_MED_SN_PREPARACAO', 'PREPARA_MED_2', 'PRE_MED: '||:new.cd_pre_med, 99992);
+
+      usuario_banco.prc_pagu_gerar_etiqu_preparo ( :New.Cd_Pre_Med );
+
+      --usuario_banco.PRC_GRAVA_LOG_ERRO('AGG', 'TRG_U_PRE_MED_SN_PREPARACAO', 'PREPARA_MED_3', 'PRE_MED: '||:new.cd_pre_med, 99993);
+    END IF;
+
+EXCEPTION WHEN OTHERS THEN
+    usuario_banco.PRC_GRAVA_LOG_ERRO('AGG', 'TRG_U_PRE_MED_SN_PREPARACAO', 'PREPARA_MED_ERRO', 'PRE_MED: '||:new.cd_pre_med||' - '||sqlerrm, 99994);
+    NULL;
+END;

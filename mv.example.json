@@ -1,0 +1,8 @@
+{
+  "environment": "homologacao",
+  "host": "",
+  "port": 1521,
+  "service_name": "",
+  "user": "",
+  "owner": "USUARIO_BANCO"
+}

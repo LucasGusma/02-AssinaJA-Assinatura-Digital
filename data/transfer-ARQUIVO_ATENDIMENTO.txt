@@ -1,0 +1,59 @@
+TRG_A_ARQUIVO_ATENDIMENTO
+Declare  /* Criada por MV Informática 24/10/2023 17:26 */
+      vcd_audit_tabela  number(10) := 0; 
+ Begin  
+    /* Auditoria das Tabelas */
+    If    Inserting Then 
+          usuario_banco.pk_sgu.audita_tabela('ARQUIVO_ATENDIMENTO','I',vcd_audit_tabela); 
+    Elsif Updating then 
+          usuario_banco.pk_sgu.audita_tabela('ARQUIVO_ATENDIMENTO','U',vcd_audit_tabela); 
+    Elsif Deleting then 
+          usuario_banco.pk_sgu.audita_tabela('ARQUIVO_ATENDIMENTO','D',vcd_audit_tabela); 
+    End If; 
+    /* Auditoria das Colunas */
+    If    Inserting Then 
+          null; 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_ARQUIVO_ATENDIMENTO',vcd_audit_tabela,null,to_char(:new.CD_ARQUIVO_ATENDIMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_ARQUIVO_DOCUMENTO',vcd_audit_tabela,null,to_char(:new.CD_ARQUIVO_DOCUMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_ATENDIMENTO',vcd_audit_tabela,null,to_char(:new.CD_ATENDIMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','DH_CRIACAO',vcd_audit_tabela,null,to_char(:new.DH_CRIACAO,'DD/MM/YYYY'),to_char(:new.CD_ARQUIVO_ATENDIMENTO)); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','NM_USUARIO',vcd_audit_tabela,null,:new.NM_USUARIO,to_char(:new.CD_ARQUIVO_ATENDIMENTO)) ; 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_TIPO_DOCUMENTO',vcd_audit_tabela,null,to_char(:new.CD_TIPO_DOCUMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_PACIENTE',vcd_audit_tabela,null,to_char(:new.CD_PACIENTE),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_PW_TIPO_DOCUMENTO',vcd_audit_tabela,null,to_char(:new.CD_PW_TIPO_DOCUMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_DOCUMENTO_CLINICO',vcd_audit_tabela,null,to_char(:new.CD_DOCUMENTO_CLINICO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','DS_DESCRICAO',vcd_audit_tabela,null,:new.DS_DESCRICAO,to_char(:new.CD_ARQUIVO_ATENDIMENTO)) ; 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_OBJETO_SELECIONADO',vcd_audit_tabela,null,to_char(:new.CD_OBJETO_SELECIONADO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_STATUS_ARQUIVO_ATENDIMENTO',vcd_audit_tabela,null,to_char(:new.CD_STATUS_ARQUIVO_ATENDIMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+    end if; 
+    If    Deleting  Then 
+          null; 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_ARQUIVO_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_ARQUIVO_ATENDIMENTO),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO),'S');
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_ARQUIVO_DOCUMENTO',vcd_audit_tabela,to_char(:old.CD_ARQUIVO_DOCUMENTO),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO),'S');
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_ATENDIMENTO),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO),'S');
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','DH_CRIACAO',vcd_audit_tabela,to_char(:old.DH_CRIACAO,'DD/MM/YYYY'),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO));
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','NM_USUARIO',vcd_audit_tabela,:old.NM_USUARIO,null,to_char(:old.CD_ARQUIVO_ATENDIMENTO));
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_TIPO_DOCUMENTO',vcd_audit_tabela,to_char(:old.CD_TIPO_DOCUMENTO),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO),'S');
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_PACIENTE',vcd_audit_tabela,to_char(:old.CD_PACIENTE),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO),'S');
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_PW_TIPO_DOCUMENTO',vcd_audit_tabela,to_char(:old.CD_PW_TIPO_DOCUMENTO),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO),'S');
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_DOCUMENTO_CLINICO',vcd_audit_tabela,to_char(:old.CD_DOCUMENTO_CLINICO),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO),'S');
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','DS_DESCRICAO',vcd_audit_tabela,:old.DS_DESCRICAO,null,to_char(:old.CD_ARQUIVO_ATENDIMENTO));
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_OBJETO_SELECIONADO',vcd_audit_tabela,to_char(:old.CD_OBJETO_SELECIONADO),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO),'S');
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_STATUS_ARQUIVO_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_STATUS_ARQUIVO_ATENDIMENTO),null,to_char(:old.CD_ARQUIVO_ATENDIMENTO),'S');
+    end if; 
+    If    Updating  Then 
+          null; 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_ARQUIVO_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_ARQUIVO_ATENDIMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_ARQUIVO_DOCUMENTO',vcd_audit_tabela,to_char(:old.CD_ARQUIVO_DOCUMENTO),to_char(:new.CD_ARQUIVO_DOCUMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_ATENDIMENTO),to_char(:new.CD_ATENDIMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','DH_CRIACAO',vcd_audit_tabela,to_char(:old.DH_CRIACAO,'DD/MM/YYYY'),to_char(:new.DH_CRIACAO,'DD/MM/YYYY'),to_char(:new.CD_ARQUIVO_ATENDIMENTO));
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','NM_USUARIO',vcd_audit_tabela,:old.NM_USUARIO,:new.NM_USUARIO,to_char(:new.CD_ARQUIVO_ATENDIMENTO)) ; 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_TIPO_DOCUMENTO',vcd_audit_tabela,to_char(:old.CD_TIPO_DOCUMENTO),to_char(:new.CD_TIPO_DOCUMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_PACIENTE',vcd_audit_tabela,to_char(:old.CD_PACIENTE),to_char(:new.CD_PACIENTE),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_PW_TIPO_DOCUMENTO',vcd_audit_tabela,to_char(:old.CD_PW_TIPO_DOCUMENTO),to_char(:new.CD_PW_TIPO_DOCUMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_DOCUMENTO_CLINICO',vcd_audit_tabela,to_char(:old.CD_DOCUMENTO_CLINICO),to_char(:new.CD_DOCUMENTO_CLINICO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','DS_DESCRICAO',vcd_audit_tabela,:old.DS_DESCRICAO,:new.DS_DESCRICAO,to_char(:new.CD_ARQUIVO_ATENDIMENTO)) ; 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_OBJETO_SELECIONADO',vcd_audit_tabela,to_char(:old.CD_OBJETO_SELECIONADO),to_char(:new.CD_OBJETO_SELECIONADO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+          usuario_banco.pk_sgu.audita_coluna('ARQUIVO_ATENDIMENTO','CD_STATUS_ARQUIVO_ATENDIMENTO',vcd_audit_tabela,to_char(:old.CD_STATUS_ARQUIVO_ATENDIMENTO),to_char(:new.CD_STATUS_ARQUIVO_ATENDIMENTO),to_char(:new.CD_ARQUIVO_ATENDIMENTO),'S'); 
+    end if; 
+ END TRG_A_ARQUIVO_ATENDIMENTO;
